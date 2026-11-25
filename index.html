@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Grammar A1–C1">
+<link rel="manifest" href="manifest.json">
+<title>📚 English Grammar – A1 to C1</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #4f46e5;
+    --accent-light: #eef2ff;
+    --accent-dark: #3730a3;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --orange: #d97706;
+    --orange-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-w: 300px;
+    --header-h: 60px;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+    --transition: .2s ease;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  #header {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  #menu-btn {
+    display: none;
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-700); padding: 6px; border-radius: 6px;
+  }
+  #menu-btn:hover { background: var(--gray-100); }
+  #menu-btn svg { display: block; }
+  #header h1 {
+    font-size: 1.1rem; font-weight: 700; color: var(--accent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #search-box {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--gray-100); border-radius: 20px;
+    padding: 6px 14px;
+    border: 1px solid var(--gray-200);
+    max-width: 240px; width: 100%;
+  }
+  #search-box svg { color: var(--gray-500); flex-shrink: 0; }
+  #search-input {
+    border: none; background: none; outline: none;
+    font-size: .9rem; color: var(--gray-800); width: 100%;
+  }
+
+  /* ===== LAYOUT ===== */
+  #layout {
+    display: flex;
+    margin-top: var(--header-h);
+    min-height: calc(100vh - var(--header-h));
+  }
+
+  /* ===== SIDEBAR ===== */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: white;
+    border-right: 1px solid var(--gray-200);
+    overflow-y: auto;
+    position: fixed;
+    top: var(--header-h); left: 0;
+    height: calc(100vh - var(--header-h));
+    z-index: 90;
+    transition: transform var(--transition);
+  }
+  #sidebar-inner { padding: 12px 0 60px; }
+
+  .cat-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cat-header:hover { background: var(--gray-50); }
+  .cat-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--accent); color: white;
+    font-size: .7rem; font-weight: 700; flex-shrink: 0;
+  }
+  .cat-title { font-size: .85rem; font-weight: 600; color: var(--gray-700); flex: 1; }
+  .cat-arrow {
+    width: 16px; height: 16px; color: var(--gray-400);
+    transition: transform var(--transition);
+  }
+  .cat-arrow.open { transform: rotate(90deg); }
+
+  .unit-list { display: none; }
+  .unit-list.open { display: block; }
+  .unit-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 16px 7px 44px;
+    cursor: pointer; font-size: .82rem; color: var(--gray-600);
+    border-left: 3px solid transparent;
+    transition: all var(--transition);
+    line-height: 1.4;
+  }
+  .unit-item:hover { background: var(--accent-light); color: var(--accent); }
+  .unit-item.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    border-left-color: var(--accent);
+  }
+
+  /* ===== OVERLAY (mobile) ===== */
+  #overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 85;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1; padding: 24px;
+    min-width: 0;
+    transition: margin-right var(--transition);
+  }
+  body.ex-nav-open #main {
+    margin-right: 290px;
+  }
+
+  /* ===== WELCOME SCREEN ===== */
+  #welcome {
+    max-width: 720px; margin: 0 auto;
+    text-align: center; padding: 48px 16px;
+  }
+  #welcome .emoji { font-size: 4rem; margin-bottom: 16px; }
+  #welcome h2 { font-size: 1.8rem; color: var(--gray-800); margin-bottom: 12px; }
+  #welcome p { color: var(--gray-500); font-size: 1rem; line-height: 1.6; margin-bottom: 24px; }
+  .stat-cards {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: white; border-radius: var(--radius); padding: 20px 28px;
+    box-shadow: var(--shadow); min-width: 120px;
+  }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: .8rem; color: var(--gray-500); margin-top: 4px; }
+
+  /* ===== CONTENT VIEWER ===== */
+  #content-area {
+    display: none;
+    max-width: 100%; margin: 0;
+  }
+
+  .unit-breadcrumb {
+    font-size: .82rem; color: var(--gray-500); margin-bottom: 8px;
+  }
+  .unit-breadcrumb span { color: var(--accent); font-weight: 600; }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex; gap: 4px;
+    background: white; border-radius: var(--radius);
+    padding: 6px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1; min-width: 100px;
+    padding: 9px 12px; border: none; border-radius: 7px;
+    font-size: .85rem; font-weight: 500; cursor: pointer;
+    background: none; color: var(--gray-500);
+    transition: all var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .tab-btn:hover { background: var(--gray-100); color: var(--gray-800); }
+  .tab-btn.active { background: var(--accent); color: white; font-weight: 600; }
+  .tab-icon { font-size: 1rem; }
+
+  /* Markdown render area */
+  .md-body {
+    background: white; border-radius: var(--radius);
+    padding: 28px 32px; box-shadow: var(--shadow);
+    line-height: 1.75; color: var(--gray-800);
+  }
+  .md-body h1 { font-size: 1.5rem; color: var(--gray-900); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--gray-200); }
+  .md-body h2 { font-size: 1.2rem; color: var(--accent-dark); margin: 28px 0 12px; padding: 8px 14px; background: var(--accent-light); border-radius: 6px; border-left: 4px solid var(--accent); }
+  .md-body h3 { font-size: 1rem; color: var(--gray-700); margin: 20px 0 8px; }
+  .md-body h4 { font-size: .95rem; color: var(--gray-600); margin: 16px 0 6px; }
+  .md-body p { margin-bottom: 12px; }
+  .md-body ul, .md-body ol { margin: 10px 0 10px 24px; }
+  .md-body li { margin-bottom: 6px; }
+  .md-body li > ul, .md-body li > ol { margin: 4px 0 4px 20px; }
+  .md-body strong { color: var(--gray-900); }
+  .md-body em { color: var(--gray-600); font-style: italic; }
+  .md-body code {
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    padding: 2px 6px; border-radius: 4px;
+    font-family: 'Fira Code', 'Consolas', monospace; font-size: .85em;
+    color: var(--accent-dark);
+  }
+  .md-body pre {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 1px 2px rgba(15,23,42,.05);
+    line-height: 1.45;
+  }
+  .md-body pre code {
+    background: none; border: none; color: #1e293b;
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    font-size: .9rem;
+    padding: 0;
+    white-space: pre;
+    display: block;
+    tab-size: 4;
+  }
+  /* Diagram semantic highlighting (zero horizontal padding so ASCII alignment stays exact) */
+  .md-body pre .dg-line { color: #6366f1; font-weight: 700; }
+  .md-body pre .dg-mark { color: #e11d48; font-weight: 800; }
+  .md-body pre .dg-time { color: #1d4ed8; font-weight: 700; }
+  .md-body pre .dg-tag { color: #0f766e; background: #ccfbf1; border-radius: 3px; font-weight: 700; }
+
+  .md-body blockquote {
+    border: 1px solid #e0e7ff;
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    background: #f8faff;
+    border-radius: 0 10px 10px 0;
+    margin: 16px 0;
+    color: var(--gray-700);
+  }
+  .md-body blockquote p:last-child { margin-bottom: 0; }
+  .md-body blockquote p { margin-bottom: 8px; }
+
+  .md-body blockquote.bq-visual {
+    background: linear-gradient(180deg, #f5f7ff 0%, #eef2ff 100%);
+    border: 1px solid #c7d2fe;
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(79,70,229,.06);
+  }
+  .md-body blockquote.bq-visual > p:first-child {
+    font-size: .98rem;
+    color: var(--accent-dark);
+    margin-bottom: 10px;
+  }
+  .md-body blockquote.bq-visual pre {
+    background: #ffffff;
+    border: 1px solid #c7d2fe;
+    box-shadow: 0 1px 4px rgba(79,70,229,.08);
+    margin: 10px 0 12px;
+  }
+  .md-body blockquote.bq-warn {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 10px;
+    color: #78350f;
+  }
+  .md-body blockquote.bq-warn pre {
+    background: #ffffff;
+    border-color: #fde68a;
+  }
+
+  /* ===== VISUAL DIAGRAMS (SVG & GRAPHIC CARDS) ===== */
+  .vd-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    box-shadow: 0 2px 8px rgba(15,23,42,.05);
+    overflow-x: auto;
+  }
+  .md-body blockquote.bq-visual .vd-card {
+    border-color: #c7d2fe;
+    margin: 10px 0 12px;
+  }
+  .vd-svg {
+    display: block;
+    width: 100%;
+    max-width: 780px;
+    height: auto;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  .vd-examples {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+    font-size: .88rem; color: var(--gray-700);
+  }
+  .vd-ex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .vd-pill {
+    font-size: .74rem; font-weight: 700; padding: 2px 9px;
+    border-radius: 999px; white-space: nowrap;
+  }
+  .vd-pill.rose { background: #ffe4e6; color: #be123c; }
+  .vd-pill.indigo { background: #e0e7ff; color: #3730a3; }
+
+  /* Summary graphic card */
+  .vd-summary-card {
+    background: #ffffff; border: 1px solid #c7d2fe; border-radius: 12px;
+    overflow: hidden; margin: 16px 0; box-shadow: 0 2px 8px rgba(79,70,229,.06);
+  }
+  .vd-summary-head {
+    background: linear-gradient(90deg, #4f46e5, #6366f1);
+    color: white; font-weight: 700; font-size: .92rem; padding: 10px 16px;
+  }
+  .vd-summary-formula {
+    background: #eef2ff; color: #312e81; font-weight: 800; font-size: 1rem;
+    padding: 10px 16px; text-align: center; border-bottom: 1px solid #e0e7ff;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  .vd-summary-grid {
+    padding: 12px 16px; display: flex; flex-direction: column; gap: 7px; font-size: .88rem;
+  }
+  .vd-warn-txt { color: #b91c1c; background: #fef2f2; padding: 6px 10px; border-radius: 6px; }
+  .vd-mini-table { margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+
+  /* Tree 2-branch card */
+  .vd-tree { margin: 16px 0; }
+  .vd-tree-root {
+    background: var(--accent); color: white; font-weight: 800; font-size: .92rem;
+    text-align: center; padding: 9px 18px; border-radius: 999px;
+    width: fit-content; margin: 0 auto 14px;
+    box-shadow: 0 2px 6px rgba(79,70,229,.25);
+  }
+  .vd-tree-branches {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+  }
+  .vd-branch {
+    background: white; border-radius: 10px; padding: 14px 16px;
+    border: 1px solid #e2e8f0; border-top: 4px solid var(--accent);
+    box-shadow: 0 1px 4px rgba(15,23,42,.04);
+  }
+  .vd-branch.blue { border-top-color: #2563eb; background: #f8fbff; }
+  .vd-branch.amber { border-top-color: #d97706; background: #fffdf5; }
+  .vd-branch.rose { border-top-color: #e11d48; background: #fff7f8; }
+  .vd-branch.green { border-top-color: #059669; background: #f4fdf8; }
+  .vd-branch-title { font-weight: 800; font-size: .88rem; margin-bottom: 8px; color: var(--gray-800); }
+  .vd-branch ul { margin: 0 0 0 18px !important; font-size: .86rem; }
+  .vd-prep-list { display: flex; flex-direction: column; gap: 6px; font-size: .85rem; }
+  .vd-prep-ico {
+    display: inline-block; min-width: 44px; text-align: center;
+    font-weight: 800; color: var(--accent); margin-right: 4px;
+    font-family: ui-monospace, monospace;
+  }
+
+  /* Deduction probability scale */
+  .vd-scale-title { font-weight: 800; font-size: .92rem; color: var(--gray-800); margin-bottom: 12px; }
+  .vd-scale { display: flex; flex-direction: column; gap: 8px; }
+  .vd-scale-row { display: grid; grid-template-columns: 74px 110px 1fr; gap: 10px; align-items: center; font-size: .85rem; }
+  .vd-scale-pct { font-weight: 800; text-align: right; font-size: .82rem; }
+  .vd-scale-bar-wrap { height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+  .vd-scale-bar { height: 100%; border-radius: 999px; }
+  .vd-scale-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+  /* Token transformation (Inversion / Reported Questions) */
+  .vd-transform { display: flex; flex-direction: column; gap: 10px; }
+  .vd-inv-title { font-size: .85rem; font-weight: 700; color: var(--accent-dark); }
+  .vd-tr-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .vd-tr-label { font-size: .82rem; font-weight: 700; color: var(--gray-600); min-width: 112px; }
+  .vd-tr-arrow {
+    font-size: .82rem; font-weight: 600; color: var(--accent);
+    background: var(--accent-light); padding: 6px 12px; border-radius: 8px;
+  }
+  .vd-tokens { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .vd-tok {
+    display: inline-flex; flex-direction: column; align-items: center;
+    padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: .88rem;
+    border: 1px solid transparent; line-height: 1.25;
+  }
+  .vd-tok em { font-style: normal; font-size: .66rem; font-weight: 700; opacity: .8; text-transform: uppercase; }
+  .vd-tok.blue { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .vd-tok.amber { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .vd-tok.rose { background: #ffe4e6; color: #be123c; border-color: #fda4af; }
+  .vd-tok.green { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .vd-tok.purple { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+  .vd-tok.gray { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+  .vd-tok.strike { text-decoration: line-through; opacity: .75; }
+
+  /* Flow rows (Reason / Result / Purpose) */
+  .vd-flow-list { display: flex; flex-direction: column; gap: 10px; }
+  .vd-flow-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .85rem; }
+  .vd-flow-box {
+    font-weight: 800; font-size: .78rem; padding: 5px 12px; border-radius: 8px; white-space: nowrap;
+  }
+  .vd-flow-box.blue { background: #dbeafe; color: #1e40af; }
+  .vd-flow-box.green { background: #d1fae5; color: #065f46; }
+  .vd-flow-box.amber { background: #fef3c7; color: #92400e; }
+  .vd-flow-box.purple { background: #ede9fe; color: #5b21b6; }
+  .vd-flow-conn { color: var(--gray-600); font-weight: 600; }
+
+  /* ===== VOCABULARY STUDIO ===== */
+  .vs-header { margin-bottom: 16px; }
+  .vs-title-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .vs-h1 {
+    font-size: 1.4rem !important; border: none !important;
+    margin: 0 0 8px !important; padding: 0 !important;
+  }
+  .vs-stats-line { display: flex; gap: 8px; flex-wrap: wrap; }
+  .vs-stat-pill {
+    font-size: .78rem; padding: 3px 10px; border-radius: 999px;
+    font-weight: 500; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .vs-stat-pill.green { background: var(--green-light); color: #065f46; }
+  .vs-stat-pill.amber { background: var(--orange-light); color: #92400e; }
+  .vs-stat-pill.indigo { background: var(--accent-light); color: var(--accent-dark); }
+
+  .vs-speech-ctrl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .vs-chip {
+    padding: 5px 11px; border-radius: 999px; border: 1px solid var(--gray-200);
+    background: white; color: var(--gray-700); font-size: .78rem; font-weight: 600;
+    cursor: pointer; transition: all var(--transition);
+  }
+  .vs-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .vs-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .vs-prog-bar {
+    height: 7px; background: var(--gray-100); border-radius: 999px; overflow: hidden;
+  }
+  .vs-prog-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 999px; transition: width .35s ease;
+  }
+
+  /* Mode Tabs */
+  .vs-mode-tabs {
+    display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px;
+    margin-bottom: 14px; border-bottom: 2px solid var(--gray-100);
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .vs-mode-tabs::-webkit-scrollbar,
+  .vs-seg-group::-webkit-scrollbar,
+  .ex-part-pills::-webkit-scrollbar { display: none; }
+  .vs-mode-btn {
+    padding: 8px 13px; border: none; border-radius: 8px 8px 0 0;
+    background: transparent; color: var(--gray-600); font-size: .84rem;
+    font-weight: 600; cursor: pointer; white-space: nowrap;
+    border-bottom: 2.5px solid transparent; transition: all var(--transition);
+    flex-shrink: 0;
+  }
+  .vs-mode-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .vs-mode-btn.active {
+    color: var(--accent); background: var(--accent-light);
+    border-bottom-color: var(--accent);
+  }
+
+  /* List Controls */
+  .vs-list-controls {
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--gray-50); padding: 12px 14px;
+    border-radius: 10px; border: 1px solid var(--gray-200); margin-bottom: 16px;
+  }
+  .vs-search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border: 1px solid var(--gray-300);
+    border-radius: 8px; padding: 7px 12px;
+  }
+  .vs-search-wrap input {
+    border: none; outline: none; width: 100%; font-size: .9rem; color: var(--gray-800);
+  }
+  .vs-filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .vs-select {
+    padding: 6px 10px; border-radius: 8px; border: 1px solid var(--gray-300);
+    background: white; font-size: .82rem; color: var(--gray-700); cursor: pointer;
+  }
+  .vs-seg-group {
+    display: inline-flex; background: white; border: 1px solid var(--gray-300);
+    border-radius: 8px; overflow-x: auto; max-width: 100%;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .vs-seg {
+    padding: 6px 10px; border: none; background: transparent;
+    font-size: .8rem; font-weight: 600; color: var(--gray-600);
+    cursor: pointer; transition: all .15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .vs-seg + .vs-seg { border-left: 1px solid var(--gray-200); }
+  .vs-seg:hover { background: var(--gray-100); }
+  .vs-seg.active { background: var(--accent); color: white; }
+
+  /* CEFR & POS badges */
+  .vs-cefr {
+    font-size: .7rem; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+    letter-spacing: .03em;
+  }
+  .vs-cefr.b1 { background: #d1fae5; color: #065f46; }
+  .vs-cefr.b2 { background: #dbeafe; color: #1e40af; }
+  .vs-cefr.c1 { background: #ede9fe; color: #5b21b6; }
+  .vs-pos-badge {
+    font-size: .72rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;
+    background: var(--gray-100); color: var(--gray-600);
+  }
+  .vs-idx { font-size: .75rem; font-weight: 700; color: var(--gray-400); }
+  .vs-ipa { font-family: ui-monospace, Menlo, monospace; font-size: .82rem; color: var(--gray-500); }
+
+  /* Card Grid */
+  .vs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+  }
+  .vs-card {
+    background: white; border: 1px solid var(--gray-200); border-radius: 12px;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 1px 3px rgba(15,23,42,.04); transition: all var(--transition);
+  }
+  .vs-card:hover { border-color: #a5b4fc; box-shadow: 0 4px 12px rgba(79,70,229,.08); }
+  .vs-card.is-mastered { border-color: #86efac; background: #f8fff9; }
+  .vs-card.is-review { border-color: #fcd34d; background: #fffdf5; }
+  .vs-card-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .vs-card-badges, .vs-card-actions, .vs-row-actions { display: flex; align-items: center; gap: 5px; }
+  .vs-card-word { font-size: 1.18rem; font-weight: 800; color: var(--gray-900); margin-top: 2px; }
+  .vs-card-ipa { font-family: ui-monospace, Menlo, monospace; font-size: .84rem; color: var(--accent); }
+  .vs-card-meaning {
+    font-size: .92rem; color: var(--gray-800); font-weight: 500;
+    padding: 6px 0; border-top: 1px dashed var(--gray-200); margin-top: 4px;
+  }
+  .vs-card-example {
+    background: var(--gray-50); border-radius: 8px; padding: 8px 10px;
+    font-size: .83rem; color: var(--gray-600); line-height: 1.5;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .vs-mini-speak {
+    align-self: flex-start; border: none; background: white;
+    border: 1px solid var(--gray-200); border-radius: 6px;
+    padding: 2px 8px; font-size: .74rem; font-weight: 600; color: var(--accent);
+    cursor: pointer;
+  }
+  .vs-mini-speak:hover { background: var(--accent-light); }
+  .vs-card-foot { margin-top: auto; padding-top: 4px; display: flex; justify-content: flex-end; }
+  .vs-srs-tag { font-size: .72rem; color: var(--gray-500); font-weight: 600; }
+  .vs-srs-tag.due { color: var(--accent); }
+
+  .vs-icon-btn {
+    border: 1px solid var(--gray-200); background: white; border-radius: 7px;
+    width: 30px; height: 30px; cursor: pointer; font-size: .85rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .15s; opacity: .7;
+  }
+  .vs-icon-btn:hover { opacity: 1; border-color: var(--accent); transform: scale(1.06); }
+  .vs-icon-btn.star-on { opacity: 1; background: #fef3c7; border-color: #f59e0b; }
+  .vs-icon-btn.done-on { opacity: 1; background: #d1fae5; border-color: #10b981; }
+
+  /* Blur / Hide mode */
+  .vs-blur {
+    filter: blur(7px); user-select: none; cursor: pointer;
+    background: var(--gray-100); border-radius: 6px; transition: filter .2s;
+  }
+  .vs-blur.revealed { filter: none; background: transparent; }
+
+  /* Table view */
+  .vs-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--gray-200); }
+  .vs-table { margin: 0 !important; box-shadow: none !important; }
+  .vs-table tr.is-mastered td { background: #f4fdf7; }
+  .vs-table tr.is-review td { background: #fffdf2; }
+  .vs-word-txt { font-weight: 700; color: var(--gray-900); }
+  .vs-ex-cell { font-size: .84rem; color: var(--gray-600); }
+
+  /* Subbar & Empty / Done */
+  .vs-subbar {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    padding: 10px 14px; background: var(--gray-50); border-radius: 10px;
+    border: 1px solid var(--gray-200);
+  }
+  .vs-empty, .vs-done-box {
+    text-align: center; padding: 40px 20px; background: var(--gray-50);
+    border-radius: 12px; border: 1px dashed var(--gray-300); color: var(--gray-600);
+  }
+  .vs-done-box h3 { color: var(--gray-900); margin: 10px 0 6px; }
+  .vs-done-box p { margin-bottom: 16px; }
+
+  /* Flashcard 3D */
+  .vs-fc-wrap { max-width: 640px; margin: 0 auto; }
+  .vs-fc-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; font-size: .8rem; color: var(--gray-500); margin-bottom: 10px;
+  }
+  .vs-fc-scene { perspective: 1100px; cursor: pointer; margin-bottom: 16px; }
+  .vs-fc-card {
+    position: relative; width: 100%; min-height: 290px;
+    transform-style: preserve-3d; transition: transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .vs-fc-card.flipped { transform: rotateY(180deg); }
+  .vs-fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 16px; padding: 24px 28px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    box-shadow: 0 8px 24px rgba(15,23,42,.08);
+  }
+  .vs-fc-front {
+    background: linear-gradient(160deg, #ffffff 0%, #f5f7ff 100%);
+    border: 2px solid #c7d2fe;
+  }
+  .vs-fc-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #ffffff 0%, #f0fdf4 100%);
+    border: 2px solid #86efac;
+  }
+  .vs-fc-badges { display: flex; gap: 6px; margin-bottom: 14px; }
+  .vs-fc-word { font-size: 2rem; font-weight: 800; color: var(--gray-900); margin-bottom: 6px; }
+  .vs-fc-ipa { font-family: ui-monospace, Menlo, monospace; font-size: 1rem; color: var(--accent); margin-bottom: 16px; }
+  .vs-fc-audio { display: flex; gap: 8px; margin-top: 6px; }
+  .vs-audio-btn {
+    padding: 6px 14px; border-radius: 999px; border: 1px solid #c7d2fe;
+    background: white; color: var(--accent-dark); font-size: .82rem; font-weight: 700;
+    cursor: pointer;
+  }
+  .vs-audio-btn:hover { background: var(--accent); color: white; }
+  .vs-fc-hint { margin-top: 18px; font-size: .78rem; color: var(--gray-400); }
+  .vs-fc-back-word { font-size: 1.05rem; font-weight: 800; color: var(--accent-dark); margin-bottom: 8px; }
+  .vs-fc-meaning { font-size: 1.25rem; font-weight: 700; color: var(--gray-900); margin-bottom: 14px; }
+  .vs-fc-example {
+    background: white; border: 1px solid var(--gray-200); border-radius: 10px;
+    padding: 10px 14px; width: 100%; font-size: .88rem; color: var(--gray-700);
+    margin-bottom: 10px;
+  }
+  .vs-fc-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+  /* SRS Rating Bar */
+  .vs-srs-bar { text-align: center; }
+  .vs-srs-prompt { font-size: .82rem; color: var(--gray-500); margin-bottom: 8px; font-weight: 600; }
+  .vs-srs-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .vs-srs-btn {
+    padding: 10px 8px; border-radius: 10px; border: 1.5px solid transparent;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: transform .15s;
+  }
+  .vs-srs-btn:hover { transform: translateY(-2px); }
+  .vs-srs-btn strong { font-size: .88rem; }
+  .vs-srs-btn span { font-size: .72rem; opacity: .85; }
+  .vs-srs-btn.q1 { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .vs-srs-btn.q2 { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  .vs-srs-btn.q3 { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+  .vs-srs-btn.q4 { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+
+  /* Quiz & Typing */
+  .vs-quiz-box { max-width: 680px; margin: 0 auto; }
+  .vs-quiz-score { font-size: .86rem; color: var(--gray-700); }
+  .vs-quiz-prompt {
+    background: linear-gradient(180deg, #f8faff 0%, #eef2ff 100%);
+    border: 1px solid #c7d2fe; border-radius: 14px;
+    padding: 22px 24px; text-align: center; margin-bottom: 16px;
+  }
+  .vs-quiz-badges { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+  .vs-quiz-main { font-size: 1.7rem; font-weight: 800; color: var(--gray-900); margin-bottom: 6px; }
+  .vs-quiz-main.vi { font-size: 1.25rem; }
+  .vs-quiz-sub { font-size: .86rem; color: var(--gray-600); display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .vs-quiz-opts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .vs-quiz-opt {
+    display: flex; align-items: center; gap: 10px; text-align: left;
+    padding: 13px 15px; border-radius: 10px; border: 1.5px solid var(--gray-200);
+    background: white; cursor: pointer; font-size: .9rem; color: var(--gray-800);
+    transition: all .15s;
+  }
+  .vs-quiz-opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
+  .vs-quiz-opt.correct { background: #dcfce7; border-color: var(--green); color: #065f46; font-weight: 700; }
+  .vs-quiz-opt.wrong { background: #fee2e2; border-color: var(--red); color: #991b1b; }
+  .vs-opt-key {
+    width: 24px; height: 24px; border-radius: 6px; background: var(--gray-100);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 800; color: var(--gray-600); flex-shrink: 0;
+  }
+  .vs-quiz-fb {
+    margin-top: 14px; padding: 14px 16px; border-radius: 10px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: .88rem;
+  }
+
+  .vs-dict-audio { display: flex; justify-content: center; gap: 10px; margin: 10px 0 12px; flex-wrap: wrap; }
+  .vs-big-audio {
+    padding: 11px 22px; border-radius: 999px; border: none;
+    background: var(--accent); color: white; font-size: .95rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,.3);
+  }
+  .vs-big-audio:hover { background: var(--accent-dark); }
+  .vs-link-btn {
+    border: none; background: none; color: var(--accent); font-weight: 700;
+    cursor: pointer; font-size: .85rem; padding: 0;
+  }
+  .vs-hint-chip { margin-top: 10px; font-size: .9rem; color: var(--accent-dark); }
+  .vs-type-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .vs-type-fb {
+    margin-top: 14px; padding: 14px 16px; border-radius: 10px; font-size: .9rem;
+  }
+  .vs-type-fb.ok { background: #f0fdf4; border: 1px solid #86efac; color: #065f46; }
+  .vs-type-fb.bad { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+  /* Match Game */
+  .vs-game-stats { display: flex; gap: 14px; flex-wrap: wrap; font-size: .88rem; color: var(--gray-700); }
+  .vs-match-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .vs-match-col { display: flex; flex-direction: column; gap: 10px; }
+  .vs-match-card {
+    padding: 13px 15px; border-radius: 12px; border: 2px solid var(--gray-200);
+    background: white; cursor: pointer; text-align: left;
+    display: flex; flex-direction: column; gap: 3px;
+    transition: all .15s; min-height: 66px; justify-content: center;
+  }
+  .vs-match-card:hover:not(:disabled) { border-color: #818cf8; background: #f8faff; transform: translateY(-1px); }
+  .vs-match-card.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(79,70,229,.18); }
+  .vs-match-card.matched { background: #dcfce7; border-color: #4ade80; opacity: .45; cursor: default; }
+  .vs-match-card.wrong { background: #fee2e2; border-color: var(--red); animation: vsShake .35s; }
+  .vs-mc-main { font-weight: 700; font-size: .95rem; color: var(--gray-900); }
+  .vs-match-card.vi .vs-mc-main { font-size: .86rem; font-weight: 600; }
+  .vs-mc-sub { font-size: .75rem; color: var(--gray-500); font-family: ui-monospace, Menlo, monospace; }
+  @keyframes vsShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .vs-notes { margin-top: 28px; padding-top: 18px; border-top: 2px solid var(--gray-100); }
+  .md-body hr { border: none; border-top: 1px solid var(--gray-200); margin: 24px 0; }
+
+  /* Tables */
+  .md-body table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: .88rem; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--gray-200);
+  }
+  .md-body th {
+    background: var(--gray-100); padding: 10px 12px;
+    text-align: left; font-weight: 600; color: var(--gray-700);
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .md-body td {
+    padding: 9px 12px; border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+  }
+  .md-body tr:last-child td { border-bottom: none; }
+  .md-body tr:hover td { background: var(--gray-50); }
+
+  /* ⚠️ warning highlights */
+  .md-body .warn-box {
+    background: var(--orange-light); border: 1px solid #fcd34d;
+    border-radius: 8px; padding: 10px 14px; margin: 8px 0;
+    font-size: .88rem;
+  }
+  .md-body del { color: var(--red); text-decoration: line-through; }
+
+  /* Loading spinner */
+  .spinner {
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px; color: var(--gray-400); flex-direction: column; gap: 12px;
+  }
+  .spinner::before {
+    content: ''; width: 32px; height: 32px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Search highlight */
+  mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
+
+  /* ===== INTERACTIVE EXERCISES ===== */
+  .ex-toolbar {
+    display: flex; flex-direction: column; gap: 7px;
+    padding: 9px 14px; background: rgba(255,255,255,.97);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(15,23,42,.07); margin-bottom: 16px;
+    border: 1px solid var(--gray-200);
+    position: sticky; top: var(--header-h); z-index: 30;
+  }
+  .ex-toolbar-row {
+    display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;
+  }
+  .ex-btn-short { display: none; }
+  .ex-part-pills {
+    display: flex; gap: 5px; overflow-x: auto; padding-bottom: 1px;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .ex-part-pill {
+    padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--gray-200); background: var(--gray-50);
+    color: var(--gray-700); font-size: .78rem; font-weight: 500;
+    cursor: pointer; white-space: nowrap; transition: all var(--transition);
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .ex-part-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .ex-part-pill.active {
+    background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;
+  }
+  .ex-part-pill .pill-count {
+    font-size: .72rem; opacity: .85; padding: 1px 6px; border-radius: 999px;
+    background: rgba(0,0,0,.07);
+  }
+  .ex-part-pill.active .pill-count { background: rgba(255,255,255,.22); }
+
+  .ex-part-section { scroll-margin-top: calc(var(--header-h) + 120px); }
+  .ex-part-section.hidden-part { display: none; }
+
+  .ex-btn {
+    padding: 7px 13px; border: 1px solid var(--gray-200);
+    border-radius: 8px; background: white; cursor: pointer;
+    font-size: .83rem; font-weight: 500; color: var(--gray-600);
+    transition: all var(--transition); display: inline-flex; align-items: center; gap: 5px;
+  }
+  .ex-btn:hover { background: var(--gray-100); border-color: var(--gray-300); }
+  .ex-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .ex-btn.primary:hover { background: var(--accent-dark); }
+  .ex-btn.nav-toggle { background: var(--accent-light); color: var(--accent-dark); border-color: #c7d2fe; font-weight: 600; }
+  .ex-btn.nav-toggle:hover { background: #e0e7ff; }
+  .score-text { font-size: .86rem; font-weight: 600; color: var(--accent); margin-left: auto; }
+
+  .ex-item {
+    padding: 14px 18px; margin: 8px 0;
+    border-radius: 8px; border: 1px solid var(--gray-200);
+    background: white; transition: all var(--transition);
+    scroll-margin-top: calc(var(--header-h) + 135px);
+  }
+  .ex-item.correct { border-color: var(--green); background: #f0fdf4; }
+  .ex-item.wrong { border-color: var(--red); background: #fef2f2; }
+  .ex-item.revealed { border-color: var(--blue); background: #eff6ff; }
+  .ex-item.ex-flash {
+    box-shadow: 0 0 0 3px rgba(79,70,229,.35);
+    border-color: var(--accent);
+  }
+
+  /* ===== EXERCISE NAVIGATOR (RIGHT MENU: PART & QUESTIONS) ===== */
+  #ex-nav {
+    display: none;
+    position: fixed;
+    top: var(--header-h); right: 0;
+    width: 290px;
+    height: calc(100vh - var(--header-h));
+    background: white;
+    border-left: 1px solid var(--gray-200);
+    box-shadow: -2px 0 12px rgba(0,0,0,.06);
+    z-index: 92;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform var(--transition);
+  }
+  #ex-nav.available { display: flex; }
+  body.ex-nav-open #ex-nav.available { transform: translateX(0); }
+
+  .ex-nav-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    flex-shrink: 0;
+  }
+  .ex-nav-title {
+    font-size: .9rem; font-weight: 700; color: var(--gray-800);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ex-nav-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-500); font-size: 1.15rem; line-height: 1;
+    padding: 4px 7px; border-radius: 6px;
+  }
+  .ex-nav-close:hover { background: var(--gray-200); color: var(--gray-800); }
+
+  .ex-nav-body {
+    flex: 1; overflow-y: auto; padding: 12px 14px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .ex-nav-sec-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--gray-500);
+    margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* Legend */
+  .ex-nav-legend {
+    display: flex; flex-wrap: wrap; gap: 8px; font-size: .72rem; color: var(--gray-600);
+    padding: 6px 8px; background: var(--gray-50); border-radius: 6px;
+  }
+  .ex-nav-legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .leg-dot {
+    width: 9px; height: 9px; border-radius: 3px; display: inline-block;
+    border: 1px solid var(--gray-300); background: white;
+  }
+  .leg-dot.filled { border-color: var(--accent); background: var(--accent-light); }
+  .leg-dot.correct { border-color: var(--green); background: var(--green); }
+  .leg-dot.wrong { border-color: var(--red); background: var(--red); }
+  .leg-dot.revealed { border-color: var(--blue); background: var(--blue); }
+
+  /* Question grid */
+  .ex-nav-q-group-title {
+    font-size: .75rem; font-weight: 700; color: var(--accent-dark);
+    margin: 10px 0 6px; padding-bottom: 3px;
+    border-bottom: 1px dashed var(--gray-200);
+  }
+  .ex-nav-q-group-title:first-child { margin-top: 0; }
+  .ex-nav-qgrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+  .ex-q-btn {
+    height: 33px; border-radius: 6px;
+    border: 1px solid var(--gray-200); background: white;
+    color: var(--gray-700); font-size: .78rem; font-weight: 600;
+    cursor: pointer; transition: all .15s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ex-q-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .ex-q-btn.filled { background: var(--accent-light); border-color: #a5b4fc; color: var(--accent-dark); }
+  .ex-q-btn.correct { background: var(--green); border-color: var(--green); color: white; }
+  .ex-q-btn.wrong { background: var(--red); border-color: var(--red); color: white; }
+  .ex-q-btn.revealed { background: var(--blue); border-color: var(--blue); color: white; }
+  .ex-q-btn.current { box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent); }
+
+  /* Floating toggle button (mobile / when closed) */
+  #ex-nav-fab {
+    display: none;
+    position: fixed; right: 16px; bottom: 18px;
+    z-index: 80;
+    padding: 10px 16px; border-radius: 999px;
+    border: none; background: var(--accent); color: white;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(79,70,229,.35);
+    align-items: center; gap: 6px;
+    transition: transform var(--transition), background var(--transition);
+  }
+  #ex-nav-fab:hover { background: var(--accent-dark); transform: translateY(-2px); }
+  #ex-nav-fab.visible { display: inline-flex; }
+  body.ex-nav-open #ex-nav-fab { display: none; }
+
+  #ex-nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35); z-index: 91;
+  }
+
+  .ex-question { display: flex; gap: 8px; margin-bottom: 10px; }
+  .ex-num { font-weight: 700; color: var(--accent); min-width: 36px; flex-shrink: 0; }
+  .ex-text { flex: 1; line-height: 1.65; }
+
+  .ex-input-row { display: flex; gap: 8px; align-items: center; padding-left: 36px; }
+  .ex-input {
+    flex: 1; padding: 8px 14px; border: 1.5px solid var(--gray-300);
+    border-radius: 8px; font-size: .9rem; outline: none;
+    transition: border-color var(--transition); max-width: 500px;
+    font-family: inherit;
+  }
+  .ex-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+  .ex-item.correct .ex-input { border-color: var(--green); background: var(--green-light); }
+  .ex-item.wrong .ex-input { border-color: var(--red); }
+
+  .ex-check {
+    padding: 8px 18px; border: none; border-radius: 8px;
+    background: var(--accent); color: white; cursor: pointer;
+    font-size: .85rem; font-weight: 600; transition: background var(--transition);
+    white-space: nowrap;
+  }
+  .ex-check:hover { background: var(--accent-dark); }
+
+  .ex-feedback {
+    display: none; margin-top: 10px; padding-left: 36px;
+  }
+  .ex-feedback-inner {
+    padding: 12px 16px; border-radius: 8px;
+    background: var(--gray-50); font-size: .88rem; line-height: 1.65;
+    border: 1px solid var(--gray-200);
+  }
+  .fb-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; font-size: .92rem;
+  }
+  .fb-explain {
+    color: var(--gray-600); border-top: 1px solid var(--gray-200);
+    padding-top: 8px; margin-top: 8px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1180px) {
+    body.ex-nav-open #main { margin-right: 0; }
+    body.ex-nav-open #ex-nav-overlay { display: block; }
+    #ex-nav { width: min(320px, 88vw); }
+  }
+
+  @media (max-width: 768px) {
+    :root { --header-h: 48px; }
+    #header { padding: 0 10px; gap: 8px; }
+    #menu-btn { display: flex; padding: 4px; }
+    #sidebar {
+      transform: translateX(-100%);
+    }
+    #sidebar.open { transform: translateX(0); }
+    #overlay.open { display: block; }
+    #main { margin-left: 0; padding: 8px 6px 24px; }
+    .unit-breadcrumb { font-size: .74rem; margin-bottom: 4px; padding: 0 4px; }
+    .tab-bar { padding: 4px; margin-bottom: 8px; gap: 3px; border-radius: 8px; }
+    .tab-btn { font-size: .78rem; padding: 6px 6px; min-width: 0; gap: 4px; }
+    .md-body { padding: 10px 10px; border-radius: 8px; }
+    .md-body h1 { font-size: 1.18rem; margin-bottom: 12px; padding-bottom: 8px; }
+    .md-body pre { padding: 10px 12px; }
+    .md-body pre code { font-size: .78rem; }
+    .md-body blockquote.bq-visual { padding: 10px 12px; }
+    .vd-tree-branches { grid-template-columns: 1fr; }
+    .vd-scale-row { grid-template-columns: 60px 64px 1fr; gap: 6px; font-size: .8rem; }
+    .vd-tr-label { min-width: 100%; }
+
+    /* Compact Vocabulary Studio on Mobile */
+    .vs-header { margin-bottom: 8px; }
+    .vs-header.is-practice .vs-h1 { display: none; }
+    .vs-h1 { font-size: 1.08rem !important; margin-bottom: 6px !important; }
+    .vs-title-row { gap: 6px; margin-bottom: 6px; align-items: center; }
+    .vs-stats-line { gap: 5px; }
+    .vs-stat-pill { font-size: .72rem; padding: 2px 7px; }
+    .vs-stat-lbl { display: none; }
+    .vs-speech-ctrl { gap: 4px; }
+    .vs-chip { padding: 3px 8px; font-size: .72rem; }
+    .vs-prog-bar { height: 5px; }
+    .vs-mode-tabs { margin-bottom: 8px; gap: 2px; padding-bottom: 0; }
+    .vs-mode-btn { padding: 6px 9px; font-size: .78rem; }
+    .vs-subbar { padding: 6px 8px; margin-bottom: 8px; gap: 6px; }
+    .vs-subbar.vs-subbar-inline { flex-wrap: nowrap; }
+    .vs-subbar .vs-seg-group { flex: 1; min-width: 0; }
+    .vs-seg { padding: 5px 8px; font-size: .74rem; }
+    .vs-compact-btn { padding: 5px 8px; font-size: .74rem; flex-shrink: 0; }
+    .vs-list-controls { padding: 8px 10px; gap: 8px; margin-bottom: 10px; }
+    .vs-search-wrap { padding: 5px 10px; }
+    .vs-filter-row { gap: 6px; }
+    .vs-select { padding: 5px 7px; font-size: .76rem; flex: 1 1 45%; min-width: 0; }
+    .vs-view-toggle { display: none; }
+    .vs-grid { grid-template-columns: 1fr; gap: 10px; }
+    .vs-card { padding: 11px 12px; }
+    .vs-kbd-hint { display: none; }
+    .vs-fc-meta { margin-bottom: 6px; font-size: .76rem; }
+    .vs-fc-scene { margin-bottom: 10px; }
+    .vs-fc-card { min-height: 230px; }
+    .vs-fc-face { padding: 16px 14px; }
+    .vs-fc-word { font-size: 1.5rem; margin-bottom: 4px; }
+    .vs-fc-ipa { font-size: .9rem; margin-bottom: 10px; }
+    .vs-fc-hint { margin-top: 12px; font-size: .74rem; }
+    .vs-fc-meaning { font-size: 1.08rem; margin-bottom: 10px; }
+    .vs-fc-nav { gap: 6px; }
+    .vs-fc-nav .ex-btn { padding: 7px 10px; font-size: .8rem; }
+    .vs-srs-prompt { font-size: .76rem; margin-bottom: 6px; }
+    .vs-srs-btns { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .vs-srs-btn { padding: 8px 6px; }
+    .vs-quiz-prompt { padding: 14px 12px; margin-bottom: 10px; }
+    .vs-quiz-main { font-size: 1.35rem; }
+    .vs-quiz-main.vi { font-size: 1.05rem; }
+    .vs-quiz-opts { grid-template-columns: 1fr; gap: 8px; }
+    .vs-quiz-opt { padding: 10px 12px; font-size: .85rem; }
+    .vs-match-board { gap: 8px; }
+    .vs-match-card { padding: 9px 10px; min-height: 54px; }
+
+    /* Compact Exercises on Mobile */
+    #header h1 { font-size: .92rem; }
+    #search-box { max-width: 140px; padding: 4px 10px; }
+    .stat-cards { gap: 10px; }
+    .stat-card { padding: 16px 20px; }
+    .ex-input-row { padding-left: 0; flex-wrap: wrap; }
+    .ex-input { max-width: 100%; }
+    .ex-toolbar {
+      position: sticky; top: var(--header-h); z-index: 30;
+      padding: 6px 10px; gap: 6px;
+      margin: -10px -10px 10px -10px;
+      border-radius: 0; border-left: none; border-right: none; border-top: none;
+      box-shadow: 0 2px 10px rgba(15,23,42,.08);
+    }
+    .ex-toolbar-row { gap: 5px; overflow-x: auto; scrollbar-width: none; }
+    .ex-toolbar-row::-webkit-scrollbar { display: none; }
+    .ex-btn { padding: 5px 9px; font-size: .76rem; flex-shrink: 0; }
+    .ex-btn-long { display: none; }
+    .ex-btn-short { display: inline; }
+    .score-text { font-size: .74rem; white-space: nowrap; }
+    .ex-part-pill { padding: 3px 9px; font-size: .73rem; }
+    .ex-part-pill .pill-count { font-size: .68rem; padding: 0 5px; }
+    #ex-nav-fab { display: none !important; }
+    .ex-item { padding: 10px 12px; scroll-margin-top: calc(var(--header-h) + 84px); }
+    .ex-question { flex-direction: column; gap: 4px; }
+    .ex-num { min-width: auto; }
+    .ex-part-section { scroll-margin-top: calc(var(--header-h) + 84px); }
+  }
+
+  @media (max-width: 480px) {
+    .tab-btn { min-width: 70px; }
+    #search-box { display: none; }
+  }
+
+  /* ===== SCROLL PROGRESS ===== */
+  #progress {
+    position: fixed; top: var(--header-h); left: 0; right: 0;
+    height: 3px; background: var(--accent);
+    transform-origin: left; transform: scaleX(0);
+    z-index: 200; transition: transform .1s;
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress"></div>
+
+<!-- Header -->
+<header id="header">
+  <button id="menu-btn" aria-label="Menu" onclick="toggleSidebar()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <h1>📚 English Grammar A1–C1</h1>
+  <div id="search-box">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input id="search-input" type="search" placeholder="Tìm unit..." autocomplete="off">
+  </div>
+</header>
+
+<!-- Overlay -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Layout -->
+<div id="layout">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div id="sidebar-inner"></div>
+  </nav>
+
+  <!-- Main -->
+  <main id="main">
+
+    <!-- Welcome -->
+    <section id="welcome">
+      <div class="emoji">📖</div>
+      <h2>Hệ thống Ngữ pháp Tiếng Anh Toàn diện</h2>
+      <p>Bộ tài liệu A1–C1 với lý thuyết chi tiết, từ vựng B1–C1, bài tập phân dạng và đáp án giải thích.<br>Chọn một unit từ menu bên trái để bắt đầu học.</p>
+      <div class="stat-cards">
+        <div class="stat-card"><div class="stat-num">14</div><div class="stat-label">Nhóm chủ điểm</div></div>
+        <div class="stat-card"><div class="stat-num">69</div><div class="stat-label">Units</div></div>
+        <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">File / Unit</div></div>
+        <div class="stat-card"><div class="stat-num">A1–C1</div><div class="stat-label">Trình độ</div></div>
+      </div>
+      <p style="font-size:.88rem;color:var(--gray-400);">
+        💡 Mỗi unit gồm: <strong>Lý thuyết</strong> · <strong>Từ vựng</strong> · <strong>Bài tập</strong> · <strong>Đáp án</strong>
+      </p>
+    </section>
+
+    <!-- Content viewer -->
+    <section id="content-area">
+      <div class="unit-breadcrumb" id="breadcrumb"></div>
+      <div class="tab-bar" id="tab-bar">
+        <button class="tab-btn active" data-tab="theory" onclick="switchTab('theory')"><span class="tab-icon">📘</span> Lý thuyết</button>
+        <button class="tab-btn" data-tab="vocabulary" onclick="switchTab('vocabulary')"><span class="tab-icon">📝</span> Từ vựng</button>
+        <button class="tab-btn" data-tab="exercises" onclick="switchTab('exercises')"><span class="tab-icon">✏️</span> Bài tập & Kiểm tra</button>
+      </div>
+      <div class="md-body" id="md-output"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Exercise Navigator (Right Drawer: Questions) -->
+<div id="ex-nav-overlay" onclick="closeExNav()"></div>
+<aside id="ex-nav" aria-label="Danh sách câu hỏi">
+  <div class="ex-nav-header">
+    <div class="ex-nav-title">📋 Danh sách câu</div>
+    <button class="ex-nav-close" onclick="closeExNav()" aria-label="Đóng menu">✕</button>
+  </div>
+  <div class="ex-nav-body">
+    <div>
+      <div class="ex-nav-sec-label">
+        <span id="ex-nav-q-label">Danh sách câu</span>
+        <span id="ex-nav-summary"></span>
+      </div>
+      <div class="ex-nav-legend">
+        <span><i class="leg-dot"></i>Chưa làm</span>
+        <span><i class="leg-dot filled"></i>Đã nhập</span>
+        <span><i class="leg-dot correct"></i>Đúng</span>
+        <span><i class="leg-dot wrong"></i>Sai</span>
+        <span><i class="leg-dot revealed"></i>Đáp án</span>
+      </div>
+    </div>
+    <div id="ex-nav-questions"></div>
+  </div>
+</aside>
+
+<button id="ex-nav-fab" onclick="toggleExNav()" aria-label="Mở danh sách câu">
+  📋 Danh sách câu <span id="ex-fab-badge"></span>
+</button>
+
+<script src="diagrams.js"></script>
+<script src="vocab.js"></script>
+<script>
+// ===== DATA STRUCTURE =====
+const CATEGORIES = [
+  { num:'01', name:'Hệ thống Thì & Thời gian', folder:'01_Tenses', units:[
+    {name:'Present Simple', folder:'01_Present_Simple'},
+    {name:'Present Continuous', folder:'02_Present_Continuous'},
+    {name:'Present Perfect', folder:'03_Present_Perfect'},
+    {name:'Present Perfect Continuous', folder:'04_Present_Perfect_Continuous'},
+    {name:'Past Simple', folder:'05_Past_Simple'},
+    {name:'Past Continuous', folder:'06_Past_Continuous'},
+    {name:'Past Perfect', folder:'07_Past_Perfect'},
+    {name:'Past Perfect Continuous', folder:'08_Past_Perfect_Continuous'},
+    {name:'Future Simple vs Be Going To', folder:'09_Future_Simple_vs_Be_Going_To'},
+    {name:'Future Continuous', folder:'10_Future_Continuous'},
+    {name:'Future Perfect', folder:'11_Future_Perfect'},
+    {name:'Future Perfect Continuous', folder:'12_Future_Perfect_Continuous'},
+    {name:'Used To / Be-Get Used To / Would', folder:'13_Used_To_Be_Get_Used_To_Would'},
+  ]},
+  { num:'02', name:'Danh từ, Mạo từ & Từ hạn định', folder:'02_Nouns_Articles_Determiners', units:[
+    {name:'Countable, Uncountable & Plural Nouns', folder:'01_Countable_Uncountable_Plural_Nouns'},
+    {name:'Articles: a, an, the & Zero Article', folder:'02_Articles_A_An_The_Zero'},
+    {name:'Pronouns & Possessives', folder:'03_Pronouns_and_Possessives'},
+    {name:'Quantifiers', folder:'04_Quantifiers'},
+    {name:'Distributives (each/every/both...)', folder:'05_Distributives'},
+  ]},
+  { num:'03', name:'Tính từ, Trạng từ & So sánh', folder:'03_Adjectives_Adverbs_Comparisons', units:[
+    {name:'Adjectives: Order, -ed/-ing', folder:'01_Adjectives_Order_ED_ING'},
+    {name:'Adverbs: Types & Positions', folder:'02_Adverbs_Types_Positions'},
+    {name:'Comparatives & Superlatives', folder:'03_Comparatives_and_Superlatives'},
+    {name:'Advanced Comparisons', folder:'04_Advanced_Comparisons'},
+    {name:'Too / Enough / So / Such', folder:'05_Too_Enough_So_Such'},
+  ]},
+  { num:'04', name:'Động từ khuyết thiếu (Modals)', folder:'04_Modal_Verbs', units:[
+    {name:'Ability, Permission & Requests', folder:'01_Ability_Permission_Requests'},
+    {name:'Obligation, Prohibition & Advice', folder:'02_Obligation_Prohibition_Advice'},
+    {name:'Deduction & Possibility (Present/Future)', folder:'03_Deduction_Possibility_Present_Future'},
+    {name:'Modals in the Past', folder:'04_Modals_in_the_Past'},
+    {name:'Semi-Modals & Preferences', folder:'05_Semi_Modals_and_Preferences'},
+  ]},
+  { num:'05', name:'Dạng Động từ (Gerunds & Infinitives)', folder:'05_Verb_Patterns_Gerunds_Infinitives', units:[
+    {name:'Gerunds (V-ing)', folder:'01_Gerunds_V_ing'},
+    {name:'Infinitives (to-V & bare V)', folder:'02_Infinitives_To_V_and_Bare_V'},
+    {name:'Verbs with Both (meaning change)', folder:'03_Verbs_With_Both_Meaning_Change'},
+    {name:'Participles & Sensory Verbs', folder:'04_Participles_and_Sensory_Verbs'},
+  ]},
+  { num:'06', name:'Câu Bị động (Passive Voice)', folder:'06_Passive_Voice', units:[
+    {name:'Passive: Simple & Continuous Tenses', folder:'01_Passive_Simple_Continuous_Tenses'},
+    {name:'Passive: Perfect, Future & Modals', folder:'02_Passive_Perfect_Future_Modals'},
+    {name:'Causative: have/get/make/let', folder:'03_Causative_Have_Get_Make_Let'},
+    {name:'Special Passive Structures', folder:'04_Special_Passive_Structures'},
+  ]},
+  { num:'07', name:'Câu Điều kiện & Câu Ước', folder:'07_Conditionals_and_Wishes', units:[
+    {name:'Zero Conditional', folder:'01_Zero_Conditional'},
+    {name:'First Conditional', folder:'02_First_Conditional'},
+    {name:'Second Conditional', folder:'03_Second_Conditional'},
+    {name:'Third Conditional', folder:'04_Third_Conditional'},
+    {name:'Mixed Conditionals & Inversion', folder:'05_Mixed_Conditionals_and_Inversion'},
+    {name:'Wish / If Only / Supposing', folder:'06_Wish_If_Only_Supposing'},
+  ]},
+  { num:'08', name:'Câu Tường thuật (Reported Speech)', folder:'08_Reported_Speech', units:[
+    {name:'Reported Statements', folder:'01_Reported_Statements'},
+    {name:'Reported Questions', folder:'02_Reported_Questions'},
+    {name:'Reported Commands, Requests & Advice', folder:'03_Reported_Commands_Requests_Advice'},
+    {name:'Reporting Verbs & Patterns', folder:'04_Reporting_Verbs_Patterns'},
+  ]},
+  { num:'09', name:'Mệnh đề Quan hệ (Relative Clauses)', folder:'09_Relative_Clauses', units:[
+    {name:'Defining Relative Clauses', folder:'01_Defining_Relative_Clauses'},
+    {name:'Non-defining Relative Clauses', folder:'02_Non_Defining_Relative_Clauses'},
+    {name:'Relative Adverbs & Prepositions', folder:'03_Relative_Adverbs_and_Prepositions'},
+    {name:'Reduced Relative Clauses', folder:'04_Reduced_Relative_Clauses'},
+  ]},
+  { num:'10', name:'Giới từ & Cụm động từ', folder:'10_Prepositions_and_Phrasal_Verbs', units:[
+    {name:'Prepositions of Time', folder:'01_Prepositions_of_Time'},
+    {name:'Prepositions of Place & Movement', folder:'02_Prepositions_of_Place_Movement'},
+    {name:'Dependent Prepositions', folder:'03_Dependent_Prepositions'},
+    {name:'Essential Phrasal Verbs (Grammar)', folder:'04_Essential_Phrasal_Verbs_Grammar'},
+  ]},
+  { num:'11', name:'Liên từ & Các loại Mệnh đề', folder:'11_Conjunctions_and_Clauses', units:[
+    {name:'Coordinating & Correlative Conjunctions', folder:'01_Coordinating_and_Correlative_Conjunctions'},
+    {name:'Clauses of Reason, Result & Purpose', folder:'02_Clauses_of_Reason_Result_Purpose'},
+    {name:'Clauses of Concession & Contrast', folder:'03_Clauses_of_Concession_Contrast'},
+    {name:'Adverbial Clauses of Time', folder:'04_Adverbial_Clauses_of_Time'},
+    {name:'Noun Clauses', folder:'05_Noun_Clauses'},
+  ]},
+  { num:'12', name:'Cấu trúc Câu & Hòa hợp Chủ–Vị', folder:'12_Sentence_Structure_Agreement', units:[
+    {name:'Subject–Verb Agreement', folder:'01_Subject_Verb_Agreement'},
+    {name:'Question Types & Tag Questions', folder:'02_Question_Types_and_Tag_Questions'},
+    {name:'There / It – Dummy Subjects', folder:'03_There_It_Dummy_Subjects'},
+    {name:'Parallelism & Sentence Errors', folder:'04_Parallelism_and_Sentence_Errors'},
+  ]},
+  { num:'13', name:'Cấu trúc Nâng cao B2–C1', folder:'13_Advanced_Structures', units:[
+    {name:'Inversion (Đảo ngữ)', folder:'01_Inversion'},
+    {name:'Subjunctive Mood (Thức giả định)', folder:'02_Subjunctive_Mood'},
+    {name:'Cleft Sentences & Emphasis', folder:'03_Cleft_Sentences_and_Emphasis'},
+    {name:'Ellipsis & Substitution', folder:'04_Ellipsis_and_Substitution'},
+  ]},
+  { num:'14', name:'Cấu tạo Từ & Dấu câu', folder:'14_Word_Formation_and_Punctuation', units:[
+    {name:'Word Formation: Prefixes & Suffixes', folder:'01_Word_Formation_Prefixes_Suffixes'},
+    {name:'Punctuation & Capitalization', folder:'02_Punctuation_and_Capitalization'},
+  ]},
+];
+
+// ===== STATE =====
+let activeUnit = null; // {catFolder, unitFolder, unitName, catName}
+let activeTab = 'theory';
+let openCats = new Set();
+
+// ===== SIDEBAR BUILD =====
+function buildSidebar(filterText='') {
+  const filter = filterText.toLowerCase().trim();
+  const inner = document.getElementById('sidebar-inner');
+  inner.innerHTML = '';
+
+  CATEGORIES.forEach((cat, ci) => {
+    const units = filter
+      ? cat.units.filter(u => u.name.toLowerCase().includes(filter))
+      : cat.units;
+    if (filter && units.length === 0) return;
+
+    const isOpen = openCats.has(cat.folder) || (filter && units.length > 0);
+
+    const catEl = document.createElement('div');
+    catEl.className = 'cat-block';
+
+    catEl.innerHTML = `
+      <div class="cat-header" onclick="toggleCat('${cat.folder}')">
+        <div class="cat-num">${cat.num}</div>
+        <div class="cat-title">${cat.name}</div>
+        <svg class="cat-arrow ${isOpen?'open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+      <div class="unit-list ${isOpen?'open':''}">
+        ${units.map(u => `
+          <div class="unit-item ${activeUnit && activeUnit.unitFolder===u.folder && activeUnit.catFolder===cat.folder ? 'active':''}"
+               onclick="loadUnit('${cat.folder}','${u.folder}','${escJ(u.name)}','${escJ(cat.name)}')">
+            ${filterText ? highlight(u.name, filterText) : u.name}
+          </div>
+        `).join('')}
+      </div>
+    `;
+    inner.appendChild(catEl);
+  });
+}
+
+function escJ(s) { return s.replace(/'/g,"&#39;"); }
+function highlight(text, q) {
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+function toggleCat(folder) {
+  if (openCats.has(folder)) openCats.delete(folder);
+  else openCats.add(folder);
+  buildSidebar(document.getElementById('search-input').value);
+}
+
+// ===== SIDEBAR TOGGLE (mobile) =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ===== SEARCH =====
+document.getElementById('search-input').addEventListener('input', e => {
+  buildSidebar(e.target.value);
+});
+
+// ===== LOAD UNIT =====
+async function loadUnit(catFolder, unitFolder, unitName, catName) {
+  activeUnit = {catFolder, unitFolder, unitName, catName};
+
+  // Update sidebar
+  buildSidebar(document.getElementById('search-input').value);
+
+  // Open category
+  openCats.add(catFolder);
+
+  // Show content area
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('content-area').style.display = 'block';
+
+  // Breadcrumb
+  document.getElementById('breadcrumb').innerHTML =
+    `<span>${catName}</span> › ${unitName}`;
+
+  // Switch to default tab
+  if (!activeTab) activeTab = 'theory';
+  switchTab(activeTab, false);
+
+  // Close mobile sidebar
+  closeSidebar();
+}
+
+// ===== TAB SWITCH =====
+async function switchTab(tab, updateActive=true) {
+  activeTab = tab;
+
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  if (!activeUnit) return;
+
+  const output = document.getElementById('md-output');
+  output.innerHTML = '<div class="spinner">Đang tải...</div>';
+
+  // For exercises: load both exercises.md and answers.md
+  if (tab === 'exercises') {
+    const basePath = `${activeUnit.catFolder}/${activeUnit.unitFolder}`;
+    const [exMd, ansMd] = await Promise.all([
+      fetchFile(`${basePath}/exercises.md`),
+      fetchFile(`${basePath}/answers.md`)
+    ]);
+
+    if (exMd === '__FILE_PROTOCOL_ERROR__') {
+      hideExNav();
+      showFileProtocolError(output); return;
+    }
+    if (exMd === null) {
+      hideExNav();
+      output.innerHTML = '<div class="spinner">❌ Không tìm thấy file bài tập</div>'; return;
+    }
+
+    output.innerHTML = renderInteractiveExercises(exMd, ansMd);
+    initExNavigator();
+    output.scrollTop = 0;
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  hideExNav();
+  const path = `${activeUnit.catFolder}/${activeUnit.unitFolder}/${tab}.md`;
+  const md = await fetchFile(path);
+
+  if (md === '__FILE_PROTOCOL_ERROR__') {
+    showFileProtocolError(output); return;
+  }
+  if (md === null) {
+    output.innerHTML = '<div class="spinner">❌ Không tìm thấy file</div>';
+    return;
+  }
+  if (tab === 'vocabulary' && typeof window.renderVocabStudio === 'function') {
+    const unitKey = `${activeUnit.catFolder}/${activeUnit.unitFolder}`;
+    window.renderVocabStudio(md, unitKey, output);
+  } else {
+    window._renderDiagramIdx = 0;
+    output.innerHTML = renderMarkdown(md);
+  }
+  output.scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+function showFileProtocolError(output) {
+  output.innerHTML = `
+    <div style="padding:32px;text-align:center;color:var(--orange);">
+      <div style="font-size:2.5rem;margin-bottom:16px;">⚠️</div>
+      <h3 style="margin-bottom:12px;color:var(--gray-800)">Cần chạy qua HTTP Server</h3>
+      <p style="color:var(--gray-600);line-height:1.7;margin-bottom:20px">
+        Trình duyệt không cho phép đọc file khi mở trực tiếp qua <code>file://</code>.<br>
+        Hãy chạy lệnh sau trong Terminal, rồi mở lại trang:
+      </p>
+      <pre style="background:var(--gray-800);color:#e5e7eb;padding:16px;border-radius:8px;text-align:left;display:inline-block;font-size:.9rem">cd "${location.pathname.replace('/index.html','')}"
+python3 -m http.server 8080</pre>
+      <p style="margin-top:16px;color:var(--gray-500);font-size:.88rem">Sau đó mở: <strong>http://localhost:8080</strong></p>
+    </div>`;
+}
+
+// ===== FILE FETCHING =====
+async function fetchFile(relPath) {
+  try {
+    const url = relPath + '?t=' + Date.now();
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    return await resp.text();
+  } catch(e) {
+    // Likely CORS/file:// issue
+    if (location.protocol === 'file:') {
+      return '__FILE_PROTOCOL_ERROR__';
+    }
+    console.warn('fetch failed:', e);
+    return null;
+  }
+}
+
+// ===== MARKDOWN RENDERER =====
+// A capable inline markdown renderer (no external deps)
+function renderMarkdown(md) {
+  // Normalize line endings
+  let text = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // Split into blocks
+  const lines = text.split('\n');
+  let html = '';
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Horizontal rule
+    if (/^(\-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+      html += '<hr>';
+      i++; continue;
+    }
+
+    // Headings
+    const hm = line.match(/^(#{1,6})\s+(.+)$/);
+    if (hm) {
+      const level = hm[1].length;
+      html += `<h${level}>${inline(hm[2])}</h${level}>`;
+      i++; continue;
+    }
+
+    // Fenced code block (use rich visual SVG diagram if available, else clean diagram card)
+    if (/^```/.test(line)) {
+      let codeLines = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      i++; // closing ```
+      const unitKey = activeUnit ? `${activeUnit.catFolder}/${activeUnit.unitFolder}` : '';
+      const dIdx = window._renderDiagramIdx || 0;
+      window._renderDiagramIdx = dIdx + 1;
+      const customDiagram = (activeTab === 'theory' && typeof window.getVisualDiagram === 'function')
+        ? window.getVisualDiagram(unitKey, dIdx)
+        : null;
+      if (customDiagram) {
+        html += customDiagram;
+      } else {
+        html += `<pre><code>${formatDiagramHtml(codeLines.join('\n'))}</code></pre>`;
+      }
+      continue;
+    }
+
+    // Blockquote
+    if (/^>(\s|$)/.test(line)) {
+      let bq = '';
+      while (i < lines.length && /^>\s*/.test(lines[i])) {
+        bq += lines[i].replace(/^>\s?/, '') + '\n';
+        i++;
+      }
+      let bqTrim = bq.trim();
+      let bqClass = '';
+      if (/^\[!(TIP|NOTE)\]/i.test(bqTrim)) {
+        bqClass = ' class="bq-visual"';
+        bqTrim = bqTrim.replace(/^\[!TIP\]\s*/i, '💡 **Mẹo nhanh:** ').replace(/^\[!NOTE\]\s*/i, 'ℹ️ **Ghi chú:** ');
+      } else if (/^\[!(WARNING|CAUTION|IMPORTANT)\]/i.test(bqTrim)) {
+        bqClass = ' class="bq-warn"';
+        bqTrim = bqTrim.replace(/^\[!(WARNING|CAUTION|IMPORTANT)\]\s*/i, '⚠️ **Lưu ý:** ');
+      } else if (/💡|Hình dung trực quan/i.test(bqTrim)) {
+        bqClass = ' class="bq-visual"';
+      } else if (/⚠️|Lưu ý|Bẫy/i.test(bqTrim)) {
+        bqClass = ' class="bq-warn"';
+      }
+      const bqHtml = renderMarkdown(bqTrim);
+      html += `<blockquote${bqClass}>${bqHtml}</blockquote>`;
+      continue;
+    }
+
+    // Table
+    if (/^\|/.test(line) && i+1 < lines.length && /^\|[\s\-\|:]+\|/.test(lines[i+1])) {
+      let rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) {
+        rows.push(lines[i]);
+        i++;
+      }
+      html += renderTable(rows);
+      continue;
+    }
+
+    // Unordered list
+    if (/^(\s*)[\*\-\+]\s/.test(line)) {
+      let listLines = [];
+      while (i < lines.length && /^(\s*)[\*\-\+]\s/.test(lines[i])) {
+        listLines.push(lines[i]);
+        i++;
+      }
+      html += renderList(listLines, false);
+      continue;
+    }
+
+    // Ordered list
+    if (/^\s*\d+\.\s/.test(line)) {
+      let listLines = [];
+      while (i < lines.length && /^\s*\d+\.\s/.test(lines[i])) {
+        listLines.push(lines[i]);
+        i++;
+      }
+      html += renderList(listLines, true);
+      continue;
+    }
+
+    // Empty line
+    if (/^\s*$/.test(line)) {
+      i++; continue;
+    }
+
+    // Paragraph – collect until blank line or block element
+    let para = '';
+    while (i < lines.length &&
+           !/^\s*$/.test(lines[i]) &&
+           !/^#/.test(lines[i]) &&
+           !/^>/.test(lines[i]) &&
+           !/^```/.test(lines[i]) &&
+           !/^\|/.test(lines[i]) &&
+           !/^(\-{3,}|\*{3,}|_{3,})\s*$/.test(lines[i]) &&
+           !/^(\s*)[\*\-\+]\s/.test(lines[i]) &&
+           !/^\s*\d+\.\s/.test(lines[i])) {
+      if (para) para += ' ';
+      para += lines[i].trim();
+      i++;
+    }
+    if (para) html += `<p>${inline(para)}</p>`;
+  }
+
+  return html;
+}
+
+function renderTable(rows) {
+  // First row = headers, second row = separator, rest = data
+  const parseRow = r => r.trim().replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+  const headers = parseRow(rows[0]);
+  // skip separator rows[1]
+  const dataRows = rows.slice(2).map(parseRow);
+
+  let t = '<table>';
+  t += '<thead><tr>' + headers.map(h => `<th>${inline(h)}</th>`).join('') + '</tr></thead>';
+  t += '<tbody>';
+  dataRows.forEach(r => {
+    t += '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>';
+  });
+  t += '</tbody></table>';
+  return t;
+}
+
+function renderList(lines, ordered) {
+  const tag = ordered ? 'ol' : 'ul';
+  let html = `<${tag}>`;
+  for (const line of lines) {
+    const content = ordered
+      ? line.replace(/^\s*\d+\.\s/, '')
+      : line.replace(/^\s*[\*\-\+]\s/, '');
+    html += `<li>${inline(content)}</li>`;
+  }
+  html += `</${tag}>`;
+  return html;
+}
+
+function inline(text) {
+  // Escape HTML first (but keep existing &xxx; entities)
+  let t = text
+    .replace(/&(?![a-z#0-9]+;)/g, '&amp;')
+    .replace(/<(?![^>]+>)/g, '&lt;');
+
+  // Clean common LaTeX arrows in markdown prose
+  t = t.replace(/\$\\rightarrow\$/g, '→')
+       .replace(/\$\\leftrightarrow\$/g, '↔')
+       .replace(/\$\\Rightarrow\$/g, '⇒');
+
+  // Bold+italic ***text***
+  t = t.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // Bold **text**
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic *text*
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Bold __text__
+  t = t.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  // Italic _text_
+  t = t.replace(/_(.+?)_/g, '<em>$1</em>');
+  // Strikethrough ~~text~~
+  t = t.replace(/~~(.+?)~~/g, '<del>$1</del>');
+  // Inline code `code`
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Links [text](url)
+  t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Line break <br>
+  t = t.replace(/  \n/g, '<br>');
+  // ⚠️ Bẫy wrap
+  if (t.includes('⚠️')) {
+    t = `<span style="color:var(--orange)">${t}</span>`;
+  }
+
+  return t;
+}
+
+function formatDiagramHtml(raw) {
+  let s = escHtml(raw);
+  // Highlight bracketed tags like [S], [Aux], [Quá khứ hoàn thành], [1]
+  s = s.replace(/(\[[^\]\n]+\])/g, '<span class="dg-tag">$1</span>');
+  // Highlight key marker symbols like (x), ●, ◈, ★, ✓
+  s = s.replace(/(\(x\)|●|◈|★|✓)/g, '<span class="dg-mark">$1</span>');
+  // Highlight box-drawing lines, arrows and timeline connectors
+  s = s.replace(/(&lt;[-─═]+|[-─═]+&gt;|[─═│┌┐└┘├┤┬┴┼▶►▼▲◄]+|-{3,}|={3,})/g, '<span class="dg-line">$1</span>');
+  // Highlight timeline labels (Vietnamese & English)
+  s = s.replace(/(Quá khứ|QUÁ KHỨ|Hiện tại|HIỆN TẠI|Tương lai|TƯƠNG LAI|\bPast\b|\bNow\b|\bFuture\b)/g, '<span class="dg-time">$1</span>');
+  return s;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll', () => {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? window.scrollY / max : 0;
+  document.getElementById('progress').style.transform = `scaleX(${pct})`;
+});
+
+// ===== INTERACTIVE EXERCISES =====
+// Global state for the current exercise session
+window._exAnswers = {};
+window._exTotal = 0;
+window._exParts = [];
+window._exActivePart = 'all'; // 'all' or part id (number)
+window._exCurrentQ = null;
+window._exQToPart = {};
+
+function parsePartHeading(rawTitle, fallbackIdx) {
+  // Strip markdown formatting for clean menu labels
+  const clean = rawTitle.replace(/[`*_]/g, '').trim();
+  // Match e.g. "Part 1 (Câu 1–45): Nhận diện..."
+  const m = clean.match(/^(Part\s+\d+)\s*(?:\(([^)]+)\))?\s*:?\s*(.*)$/i);
+  if (m) {
+    return {
+      shortTitle: m[1],
+      rangeText: m[2] || '',
+      desc: m[3] || ''
+    };
+  }
+  return {
+    shortTitle: `Phần ${fallbackIdx}`,
+    rangeText: '',
+    desc: clean
+  };
+}
+
+function parseAnswers(md) {
+  if (!md) return {};
+  const answers = {};
+  const lines = md.split('\n');
+  let curNum = null, curText = '';
+
+  function save() {
+    if (curNum === null) return;
+    // Extract bold answer: **...**
+    const bm = curText.match(/^\*\*(.+?)\*\*/);
+    if (!bm) { curNum = null; curText = ''; return; }
+
+    let ansRaw = bm[1].trim();
+    // Collect alternatives from *(hoặc `...`)*
+    let alts = [];
+    const altRe = /\*\(hoặc\s+(.+?)\)\*/g;
+    let am;
+    while ((am = altRe.exec(curText)) !== null) {
+      am[1].replace(/`/g, '').split(/\s*\/\s*/).forEach(a => alts.push(a.trim()));
+    }
+
+    // Split by " / " for multi-blank
+    let parts = ansRaw.split(/\s+\/\s+/);
+    let acceptAll = [];
+    parts.forEach(p => {
+      // Check for inline alternative in parens: "doesn't have (does not have)"
+      const pm = p.match(/^(.+?)\s*\((.+?)\)\s*$/);
+      if (pm) {
+        acceptAll.push(pm[1].trim());
+        acceptAll.push(pm[2].trim());
+        acceptAll.push(p.trim());
+      } else {
+        acceptAll.push(p.trim());
+      }
+    });
+    // Also accept the full raw string for multi-blank answers like "evaporates / rises"
+    if (parts.length > 1) acceptAll.push(ansRaw);
+    alts.forEach(a => { if (!acceptAll.includes(a)) acceptAll.push(a); });
+
+    // Full explanation text
+    const expIdx = curText.indexOf('—');
+    const explanation = expIdx >= 0 ? curText.substring(expIdx + 1).trim() : curText.replace(/^\*\*.+?\*\*\s*/, '');
+
+    answers[curNum] = {
+      display: ansRaw,
+      accept: acceptAll,
+      explanation: explanation,
+      fullText: curText
+    };
+    curNum = null; curText = '';
+  }
+
+  for (const line of lines) {
+    // Support both "1. **ans** ..." and "**1. ans** ..."
+    const m = line.match(/^(\d+)\.\s+(.*)/);
+    const bmLine = !m ? line.match(/^\*\*(\d+)\.\s+(.+?)\*\*(.*)/) : null;
+    if (m) {
+      save();
+      curNum = parseInt(m[1]);
+      curText = m[2];
+    } else if (bmLine) {
+      save();
+      curNum = parseInt(bmLine[1]);
+      curText = `**${bmLine[2].trim()}** ${bmLine[3].trim()}`.trim();
+    } else if (curNum !== null) {
+      if (/^#{1,6}\s/.test(line) || /^-{3,}\s*$/.test(line)) {
+        save();
+      } else if (line.trim()) {
+        curText += ' ' + line.trim();
+      }
+    }
+  }
+  save();
+  return answers;
+}
+
+function renderInteractiveExercises(exMd, ansMd) {
+  const answers = parseAnswers(ansMd);
+  window._exAnswers = answers;
+  window._exTotal = 0;
+  window._exParts = [];
+  window._exActivePart = 'all';
+  window._exCurrentQ = null;
+  window._exQToPart = {};
+
+  const text = exMd.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = text.split('\n');
+
+  // Detect whether this file uses explicit "Part N" headings (## or ###)
+  const hasExplicitParts = lines.some(l => /^#{2,3}\s+Part\s+\d+/i.test(l));
+  // Collect all question numbers already written as numbered list lines ("45. ...")
+  const explicitQuestionNums = new Set();
+  lines.forEach(l => {
+    const m = l.match(/^(\d+)\.\s+/);
+    if (m) explicitQuestionNums.add(parseInt(m[1]));
+  });
+
+  let bodyHtml = '';
+  let i = 0;
+  let currentPart = null;
+
+  function openPart(headingText) {
+    if (currentPart) {
+      bodyHtml += '</section>';
+    }
+    const id = window._exParts.length + 1;
+    const meta = parsePartHeading(headingText, id);
+    currentPart = {
+      id,
+      shortTitle: meta.shortTitle,
+      rangeText: meta.rangeText,
+      desc: meta.desc,
+      questions: []
+    };
+    window._exParts.push(currentPart);
+    bodyHtml += `<section class="ex-part-section" id="ex-part-${id}" data-part="${id}">`;
+  }
+
+  function appendClozeBlanks(rawText) {
+    const blankRe = /\*\*\((\d+)(?:[.)]?\s*([^)]*))?\)\*\*(?:\s*_+\s*\(([^)]+)\))?/g;
+    let bm;
+    const foundBlanks = [];
+    const seen = new Set();
+    while ((bm = blankRe.exec(rawText)) !== null) {
+      const bNum = parseInt(bm[1]);
+      if (!seen.has(bNum) && !explicitQuestionNums.has(bNum) && window._exQToPart[bNum] === undefined) {
+        seen.add(bNum);
+        const hint = (bm[2] || bm[3] || '').trim();
+        foundBlanks.push({ num: bNum, hint });
+      }
+    }
+    if (foundBlanks.length === 0) return;
+    if (!currentPart) openPart('Part 1: Bài tập');
+    foundBlanks.forEach(b => {
+      currentPart.questions.push(b.num);
+      window._exQToPart[b.num] = currentPart.id;
+      window._exTotal++;
+      const label = b.hint
+        ? `Chỗ trống <strong>(${b.num})</strong> — gợi ý: <code>${escHtml(b.hint)}</code>`
+        : `Chỗ trống <strong>(${b.num})</strong> trong đoạn văn trên`;
+      bodyHtml += `<div class="ex-item" id="q-${b.num}" data-num="${b.num}" data-part="${currentPart.id}">
+        <div class="ex-question">
+          <span class="ex-num">${b.num}.</span>
+          <div class="ex-text">${label}</div>
+        </div>
+        <div class="ex-input-row">
+          <input type="text" class="ex-input" id="input-${b.num}"
+                 placeholder="Nhập đáp án cho chỗ trống (${b.num})..."
+                 oninput="onExInput(${b.num})"
+                 onfocus="setCurrentQuestion(${b.num})"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();checkOneEx(${b.num})}">
+          <button class="ex-check" onclick="checkOneEx(${b.num})">Kiểm tra</button>
+        </div>
+        <div class="ex-feedback" id="fb-${b.num}"></div>
+      </div>`;
+    });
+  }
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // HR
+    if (/^(\-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+      bodyHtml += '<hr>'; i++; continue;
+    }
+
+    // Heading
+    const hm = line.match(/^(#{1,6})\s+(.+)$/);
+    if (hm) {
+      const level = hm[1].length;
+      const title = hm[2];
+      const isPartHeading = hasExplicitParts
+        ? (level >= 2 && level <= 3 && /^Part\s+\d+/i.test(title.replace(/[`*_]/g, '').trim()))
+        : (level === 2);
+
+      if (isPartHeading) {
+        openPart(title);
+      }
+      bodyHtml += `<h${level}>${inline(title)}</h${level}>`;
+      i++; continue;
+    }
+
+    // Blockquote (also detect cloze-passage numbered blanks like **(271. consist)** or **(45)**)
+    if (/^>\s/.test(line)) {
+      let bq = [];
+      while (i < lines.length && /^>/.test(lines[i])) {
+        bq.push(lines[i].replace(/^>\s?/, ''));
+        i++;
+      }
+      const bqRaw = bq.join('\n');
+      bodyHtml += `<blockquote>${bq.map(l => `<p>${inline(l)}</p>`).join('')}</blockquote>`;
+      appendClozeBlanks(bqRaw);
+      continue;
+    }
+
+    // Table
+    if (/^\|/.test(line) && i+1 < lines.length && /^\|[\s\-\|:]+\|/.test(lines[i+1])) {
+      let rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) {
+        rows.push(lines[i]); i++;
+      }
+      bodyHtml += renderTable(rows);
+      continue;
+    }
+
+    // Numbered question
+    const qm = line.match(/^(\d+)\.\s+([\s\S]*)/);
+    if (qm) {
+      const num = parseInt(qm[1]);
+      let qText = qm[2];
+      // Collect continuation lines (indented or sub-items like A. B. C. D.)
+      while (i + 1 < lines.length) {
+        const nx = lines[i + 1];
+        if (/^\s*$/.test(nx)) break;
+        if (/^\d+\.\s/.test(nx)) break;
+        if (/^#{1,6}\s/.test(nx)) break;
+        if (/^(\-{3,}|\*{3,}|_{3,})\s*$/.test(nx)) break;
+        if (/^>\s/.test(nx)) break;
+        if (/^\|/.test(nx)) break;
+        i++;
+        qText += '\n' + lines[i];
+      }
+
+      if (!currentPart) {
+        openPart('Part 1: Bài tập');
+      }
+      currentPart.questions.push(num);
+      window._exQToPart[num] = currentPart.id;
+      window._exTotal++;
+      const qHtml = inline(qText.replace(/\n/g, '<br>'));
+
+      bodyHtml += `<div class="ex-item" id="q-${num}" data-num="${num}" data-part="${currentPart.id}">
+        <div class="ex-question">
+          <span class="ex-num">${num}.</span>
+          <div class="ex-text">${qHtml}</div>
+        </div>
+        <div class="ex-input-row">
+          <input type="text" class="ex-input" id="input-${num}"
+                 placeholder="Nhập đáp án..."
+                 oninput="onExInput(${num})"
+                 onfocus="setCurrentQuestion(${num})"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();checkOneEx(${num})}">
+          <button class="ex-check" onclick="checkOneEx(${num})">Kiểm tra</button>
+        </div>
+        <div class="ex-feedback" id="fb-${num}"></div>
+      </div>`;
+
+      i++; continue;
+    }
+
+    // Empty
+    if (/^\s*$/.test(line)) { i++; continue; }
+
+    // Paragraph
+    let para = '';
+    while (i < lines.length &&
+           !/^\s*$/.test(lines[i]) && !/^#/.test(lines[i]) && !/^>/.test(lines[i]) &&
+           !/^(\-{3,}|\*{3,}|_{3,})\s*$/.test(lines[i]) &&
+           !/^\d+\.\s/.test(lines[i]) && !/^\|/.test(lines[i])) {
+      para += (para ? ' ' : '') + lines[i].trim();
+      i++;
+    }
+    if (para) {
+      bodyHtml += `<p>${inline(para)}</p>`;
+      appendClozeBlanks(para);
+    }
+  }
+
+  if (currentPart) {
+    bodyHtml += '</section>';
+  }
+
+  // Fill rangeText for any part that didn't explicitly include "(Câu X–Y)"
+  window._exParts.forEach(p => {
+    if (!p.rangeText && p.questions.length > 0) {
+      const first = p.questions[0];
+      const last = p.questions[p.questions.length - 1];
+      p.rangeText = first === last ? `Câu ${first}` : `Câu ${first}–${last}`;
+    }
+  });
+
+  // Build quick Part pills bar
+  let pillsHtml = '';
+  if (window._exParts.length > 0) {
+    pillsHtml = `<div class="ex-part-pills" id="ex-part-pills">
+      <button class="ex-part-pill active" data-part="all" onclick="selectExPart('all')">
+        Tất cả <span class="pill-count">${window._exTotal}</span>
+      </button>
+      ${window._exParts.map(p => `
+        <button class="ex-part-pill" data-part="${p.id}" onclick="selectExPart(${p.id})" title="${escHtml(p.desc || p.shortTitle)}">
+          ${escHtml(p.shortTitle)} <span class="pill-count" id="pill-cnt-${p.id}">0/${p.questions.length}</span>
+        </button>
+      `).join('')}
+    </div>`;
+  }
+
+  const toolbarHtml = `<div class="ex-toolbar">
+    <div class="ex-toolbar-row">
+      <button class="ex-btn primary" onclick="checkAllEx()" title="Kiểm tra đáp án đã nhập">🔍 <span class="ex-btn-long">Kiểm tra</span><span class="ex-btn-short">Chấm</span></button>
+      <button class="ex-btn" onclick="showAllEx()" title="Xem đáp án">👁 <span class="ex-btn-long">Xem đáp án</span><span class="ex-btn-short">Đáp án</span></button>
+      <button class="ex-btn" onclick="resetAllEx()" title="Làm lại">🔄<span class="ex-btn-long"> Làm lại</span></button>
+      <button class="ex-btn nav-toggle" onclick="toggleExNav()" title="Mở danh sách câu">📋 <span class="ex-btn-long">Danh sách câu</span><span class="ex-btn-short">Câu</span></button>
+      <span id="score-info"></span>
+    </div>
+    ${pillsHtml}
+  </div>`;
+
+  return toolbarHtml + bodyHtml;
+}
+
+// ===== EXERCISE NAVIGATOR (PART & QUESTION MENU) =====
+function initExNavigator() {
+  const nav = document.getElementById('ex-nav');
+  const fab = document.getElementById('ex-nav-fab');
+  if (!nav || !fab) return;
+
+  if (window._exTotal === 0) {
+    hideExNav();
+    return;
+  }
+
+  nav.classList.add('available');
+  fab.classList.add('visible');
+
+  // Auto-open on wide desktops; keep closed as drawer on mobile/tablet
+  if (window.innerWidth > 1180) {
+    document.body.classList.add('ex-nav-open');
+  } else {
+    document.body.classList.remove('ex-nav-open');
+  }
+
+  renderExNavQuestions();
+  refreshExNavStatus();
+}
+
+function hideExNav() {
+  const nav = document.getElementById('ex-nav');
+  const fab = document.getElementById('ex-nav-fab');
+  if (nav) nav.classList.remove('available');
+  if (fab) fab.classList.remove('visible');
+  document.body.classList.remove('ex-nav-open');
+}
+
+function toggleExNav() {
+  document.body.classList.toggle('ex-nav-open');
+}
+function openExNav() {
+  document.body.classList.add('ex-nav-open');
+}
+function closeExNav() {
+  document.body.classList.remove('ex-nav-open');
+}
+
+function renderExNavQuestions() {
+  const container = document.getElementById('ex-nav-questions');
+  const label = document.getElementById('ex-nav-q-label');
+  if (!container) return;
+
+  const partsToShow = window._exActivePart === 'all'
+    ? window._exParts
+    : window._exParts.filter(p => p.id === window._exActivePart);
+
+  if (label) {
+    if (window._exActivePart === 'all') {
+      label.textContent = `Danh sách câu (${window._exTotal} câu)`;
+    } else {
+      const p = partsToShow[0];
+      label.textContent = p ? `${p.shortTitle} (${p.questions.length} câu)` : 'Danh sách câu';
+    }
+  }
+
+  let html = '';
+  partsToShow.forEach(p => {
+    if (window._exActivePart === 'all' && window._exParts.length > 1) {
+      html += `<div class="ex-nav-q-group-title">${escHtml(p.shortTitle)}${p.rangeText ? ' (' + escHtml(p.rangeText) + ')' : ''}</div>`;
+    }
+    html += `<div class="ex-nav-qgrid">
+      ${p.questions.map(num => `
+        <button class="ex-q-btn" id="qbtn-${num}" data-num="${num}" onclick="jumpToQuestion(${num})">${num}</button>
+      `).join('')}
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  refreshExNavStatus();
+}
+
+function selectExPart(partId, scrollToPart=true) {
+  window._exActivePart = partId;
+
+  // Toggle visibility of part sections
+  document.querySelectorAll('.ex-part-section').forEach(sec => {
+    const pid = parseInt(sec.dataset.part);
+    const hide = (partId !== 'all' && pid !== partId);
+    sec.classList.toggle('hidden-part', hide);
+  });
+
+  // Update toolbar pills
+  document.querySelectorAll('#ex-part-pills .ex-part-pill').forEach(btn => {
+    const p = btn.dataset.part === 'all' ? 'all' : parseInt(btn.dataset.part);
+    btn.classList.toggle('active', p === partId);
+  });
+
+  // Update question grid for selected part
+  renderExNavQuestions();
+  updateExScore();
+
+  if (scrollToPart) {
+    if (partId === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const sec = document.getElementById(`ex-part-${partId}`);
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+function jumpToQuestion(num) {
+  const partId = window._exQToPart[num];
+  if (window._exActivePart !== 'all' && partId && window._exActivePart !== partId) {
+    selectExPart(partId, false);
+  }
+
+  const el = document.getElementById(`q-${num}`);
+  if (!el) return;
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('ex-flash');
+  void el.offsetWidth;
+  el.classList.add('ex-flash');
+  setTimeout(() => el.classList.remove('ex-flash'), 1200);
+
+  setCurrentQuestion(num);
+
+  const inp = document.getElementById(`input-${num}`);
+  if (inp) {
+    setTimeout(() => inp.focus({ preventScroll: true }), 250);
+  }
+
+  if (window.innerWidth <= 1180) {
+    closeExNav();
+  }
+}
+
+function setCurrentQuestion(num) {
+  window._exCurrentQ = num;
+  document.querySelectorAll('.ex-q-btn.current').forEach(b => b.classList.remove('current'));
+  const btn = document.getElementById(`qbtn-${num}`);
+  if (btn) btn.classList.add('current');
+}
+
+function onExInput(num) {
+  const btn = document.getElementById(`qbtn-${num}`);
+  const item = document.getElementById(`q-${num}`);
+  const inp = document.getElementById(`input-${num}`);
+  if (!btn || !item || !inp) return;
+  if (!item.classList.contains('correct') && !item.classList.contains('wrong') && !item.classList.contains('revealed')) {
+    btn.classList.toggle('filled', inp.value.trim().length > 0);
+  }
+}
+
+function refreshExNavStatus() {
+  let totalDone = 0;
+
+  window._exParts.forEach(p => {
+    let partDone = 0;
+    p.questions.forEach(num => {
+      const item = document.getElementById(`q-${num}`);
+      const inp = document.getElementById(`input-${num}`);
+      const btn = document.getElementById(`qbtn-${num}`);
+      let state = '';
+      if (item) {
+        if (item.classList.contains('correct')) state = 'correct';
+        else if (item.classList.contains('wrong')) state = 'wrong';
+        else if (item.classList.contains('revealed')) state = 'revealed';
+        else if (inp && inp.value.trim().length > 0) state = 'filled';
+      }
+      if (state === 'correct' || state === 'wrong' || state === 'revealed') {
+        partDone++;
+        totalDone++;
+      }
+      if (btn) {
+        btn.classList.remove('filled', 'correct', 'wrong', 'revealed', 'current');
+        if (state) btn.classList.add(state);
+        if (window._exCurrentQ === num) btn.classList.add('current');
+      }
+    });
+
+    const pillCnt = document.getElementById(`pill-cnt-${p.id}`);
+    if (pillCnt) {
+      pillCnt.textContent = `${partDone}/${p.questions.length}`;
+    }
+  });
+
+  const summary = document.getElementById('ex-nav-summary');
+  if (summary) summary.textContent = `${totalDone}/${window._exTotal} đã làm`;
+  const fabBadge = document.getElementById('ex-fab-badge');
+  if (fabBadge) fabBadge.textContent = `(${totalDone}/${window._exTotal})`;
+}
+
+function getActiveExItems() {
+  if (window._exActivePart === 'all') {
+    return Array.from(document.querySelectorAll('.ex-item'));
+  }
+  return Array.from(document.querySelectorAll(`.ex-item[data-part="${window._exActivePart}"]`));
+}
+
+function norm(s) {
+  return s.toLowerCase().trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[''ʼ]/g, "'")
+    .replace(/[""]/g, '"');
+}
+
+function checkOneEx(num) {
+  const inp = document.getElementById(`input-${num}`);
+  const fb = document.getElementById(`fb-${num}`);
+  const item = document.getElementById(`q-${num}`);
+  if (!inp || !fb) return;
+
+  const userVal = norm(inp.value);
+  if (!userVal) { inp.focus(); return; }
+
+  const ans = window._exAnswers[num];
+  if (!ans) {
+    fb.innerHTML = `<div class="ex-feedback-inner"><div class="fb-header"><span>ℹ️</span> Chưa có đáp án cho câu này.</div></div>`;
+    fb.style.display = 'block';
+    return;
+  }
+
+  const correct = ans.accept.some(a => norm(a) === userVal);
+  item.classList.remove('correct', 'wrong', 'revealed');
+  item.classList.add(correct ? 'correct' : 'wrong');
+
+  if (correct) {
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">✅ <strong>Chính xác!</strong> Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+  } else {
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">❌ Chưa đúng. Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+  }
+  fb.style.display = 'block';
+  updateExScore();
+  refreshExNavStatus();
+}
+
+function checkAllEx() {
+  getActiveExItems().forEach(el => {
+    const num = parseInt(el.dataset.num);
+    const inp = document.getElementById(`input-${num}`);
+    if (inp && inp.value.trim()) checkOneEx(num);
+  });
+  updateExScore();
+  refreshExNavStatus();
+}
+
+function showAllEx() {
+  getActiveExItems().forEach(el => {
+    const num = parseInt(el.dataset.num);
+    const ans = window._exAnswers[num];
+    const fb = document.getElementById(`fb-${num}`);
+    const inp = document.getElementById(`input-${num}`);
+    if (!ans || !fb) return;
+
+    if (!inp.value.trim()) inp.value = ans.display;
+
+    el.classList.remove('correct', 'wrong');
+    el.classList.add('revealed');
+
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">💡 Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+    fb.style.display = 'block';
+  });
+  updateExScore();
+  refreshExNavStatus();
+}
+
+function resetAllEx() {
+  getActiveExItems().forEach(el => {
+    el.classList.remove('correct', 'wrong', 'revealed');
+    const num = parseInt(el.dataset.num);
+    const inp = document.getElementById(`input-${num}`);
+    const fb = document.getElementById(`fb-${num}`);
+    if (inp) inp.value = '';
+    if (fb) { fb.innerHTML = ''; fb.style.display = 'none'; }
+  });
+  updateExScore();
+  refreshExNavStatus();
+}
+
+function updateExScore() {
+  const items = getActiveExItems();
+  const correct = items.filter(el => el.classList.contains('correct')).length;
+  const wrong = items.filter(el => el.classList.contains('wrong')).length;
+  const answered = correct + wrong;
+  const sc = document.getElementById('score-info');
+  if (!sc) return;
+  if (answered > 0) {
+    const pct = Math.round((correct / answered) * 100);
+    const scope = window._exActivePart === 'all' ? '' : `Part ${window._exActivePart}: `;
+    sc.innerHTML = `<span class="score-text">📊 ${scope}${correct}/${answered} đúng (${pct}%)</span>`;
+  } else {
+    sc.innerHTML = '';
+  }
+}
+
+// ===== INIT =====
+buildSidebar();
+
+// Auto-open first category
+openCats.add('01_Tenses');
+buildSidebar();
+</script>
+</body>
+</html>
+

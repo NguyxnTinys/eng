@@ -1,0 +1,9 @@
+{
+  "name": "English Grammar A1–C1",
+  "short_name": "Grammar A1–C1",
+  "description": "Hệ thống tự học Ngữ pháp & Từ vựng Tiếng Anh toàn diện A1–C1 (69 Units)",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#4f46e5"
+}
