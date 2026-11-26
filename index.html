@@ -459,12 +459,93 @@
   }
   .vs-stats-line { display: flex; gap: 8px; flex-wrap: wrap; }
   .vs-stat-pill {
-    font-size: .78rem; padding: 3px 10px; border-radius: 999px;
+    font-size: .78rem; padding: 4px 11px; border-radius: 999px;
     font-weight: 500; display: inline-flex; align-items: center; gap: 4px;
+    border: 1.5px solid transparent; cursor: pointer;
+    transition: all .15s ease; font-family: inherit;
   }
+  .vs-stat-pill:hover { transform: translateY(-1px); filter: brightness(.96); }
   .vs-stat-pill.green { background: var(--green-light); color: #065f46; }
+  .vs-stat-pill.green.active { border-color: var(--green); box-shadow: 0 0 0 2px rgba(5,150,105,.2); }
   .vs-stat-pill.amber { background: var(--orange-light); color: #92400e; }
+  .vs-stat-pill.amber.active { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(217,119,6,.2); }
   .vs-stat-pill.indigo { background: var(--accent-light); color: var(--accent-dark); }
+  .vs-stat-pill.indigo.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.2); }
+
+  /* Filter status banner */
+  .vs-filter-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    background: var(--accent-light); border: 1px solid #c7d2fe; border-radius: 10px;
+    padding: 8px 14px; margin-bottom: 12px; font-size: .84rem; color: var(--accent-dark);
+  }
+  .vs-banner-clear {
+    border: 1px solid #a5b4fc; background: white; color: var(--accent-dark);
+    border-radius: 999px; padding: 3px 10px; font-size: .78rem; font-weight: 700;
+    cursor: pointer;
+  }
+  .vs-banner-clear:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Settings Modal */
+  .vs-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(15,23,42,.45);
+    backdrop-filter: blur(3px); z-index: 250;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .vs-modal {
+    background: white; border-radius: 14px; width: 100%; max-width: 560px;
+    max-height: 90vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 45px rgba(15,23,42,.22); overflow: hidden;
+  }
+  .vs-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+  }
+  .vs-modal-head h3 { font-size: 1rem; color: var(--gray-900); margin: 0 !important; }
+  .vs-modal-body {
+    padding: 16px 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+  }
+  .vs-set-sec {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 12px 14px; background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 10px;
+  }
+  .vs-set-title { font-size: .85rem; font-weight: 800; color: var(--accent-dark); }
+  .vs-set-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; font-size: .84rem; color: var(--gray-700);
+  }
+  .vs-switch {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;
+  }
+  .vs-preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .vs-preset-btn {
+    padding: 6px 10px; border-radius: 8px; border: 1px solid var(--gray-300);
+    background: white; font-size: .78rem; font-weight: 600; color: var(--gray-700);
+    cursor: pointer; transition: all .15s;
+  }
+  .vs-preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .vs-preset-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .vs-srs-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+  }
+  .vs-field {
+    display: flex; flex-direction: column; gap: 4px; font-size: .76rem; color: var(--gray-600); font-weight: 600;
+  }
+  .vs-field input {
+    padding: 6px 8px; border: 1px solid var(--gray-300); border-radius: 7px;
+    font-size: .86rem; font-weight: 700; color: var(--gray-900); background: white; width: 100%;
+  }
+  .vs-srs-preview {
+    background: white; border: 1px dashed #a5b4fc; border-radius: 8px;
+    padding: 8px 10px; font-size: .8rem; color: var(--accent-dark); line-height: 1.5;
+  }
+  .vs-modal-foot {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 12px 18px; border-top: 1px solid var(--gray-200); background: var(--gray-50);
+  }
+  .vs-danger-btn { color: var(--red) !important; border-color: #fecaca !important; }
+  .vs-danger-btn:hover { background: #fee2e2 !important; }
 
   .vs-speech-ctrl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .vs-chip {
@@ -1150,6 +1231,10 @@
     .vs-stats-line { gap: 5px; }
     .vs-stat-pill { font-size: .72rem; padding: 2px 7px; }
     .vs-stat-lbl { display: none; }
+    .vs-set-lbl { display: none; }
+    .vs-srs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .vs-modal { max-height: 92vh; }
+    .vs-modal-body { padding: 12px 14px; }
     .vs-speech-ctrl { gap: 4px; }
     .vs-chip { padding: 3px 8px; font-size: .72rem; }
     .vs-prog-bar { height: 5px; }

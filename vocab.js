@@ -2,6 +2,57 @@
 
 (function () {
   const STORAGE_KEY = 'eg_vocab_progress_v1';
+  const SETTINGS_KEY = 'eg_vocab_settings_v1';
+
+  const SRS_PRESETS = {
+    standard: {
+      label: 'Chuẩn Ebbinghaus (Khuyến nghị)',
+      againMins: 10,
+      hardHours: 1,
+      goodDays: 1,
+      easyDays: 3,
+      easeFactor: 1.8,
+      maxIntervalDays: 21
+    },
+    intensive: {
+      label: 'Ôn gấp trước thi (IELTS Sprint)',
+      againMins: 5,
+      hardHours: 0.5,
+      goodDays: 0.5,
+      easyDays: 2,
+      easeFactor: 1.5,
+      maxIntervalDays: 7
+    },
+    longterm: {
+      label: 'Ghi nhớ dài hạn',
+      againMins: 10,
+      hardHours: 2,
+      goodDays: 1,
+      easyDays: 3,
+      easeFactor: 2.0,
+      maxIntervalDays: 30
+    }
+  };
+
+  function defaultSettings() {
+    return Object.assign({
+      accent: 'en-US',
+      speechRate: 0.96,
+      autoSpeak: true,
+      srsPreset: 'standard'
+    }, SRS_PRESETS.standard);
+  }
+
+  function loadSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      return Object.assign(defaultSettings(), saved);
+    } catch { return defaultSettings(); }
+  }
+
+  function saveSettings(s) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch {}
+  }
 
   // State for current unit vocabulary session
   const state = {
@@ -12,8 +63,8 @@
     notesMd: '',
     mode: 'list',     // 'list' | 'flashcard' | 'quiz' | 'typing' | 'game'
     view: 'grid',     // 'grid' | 'table'
-    accent: 'en-US',  // 'en-US' | 'en-GB'
-    slowSpeech: false,
+    settings: loadSettings(),
+    settingsOpen: false,
     hideMode: 'none', // 'none' | 'meaning' | 'word'
     search: '',
     filterCefr: 'all',
@@ -26,7 +77,7 @@
     game: { round: 1, pairs: [], leftSel: null, rightSel: null, matched: new Set(), mistakes: 0, combo: 0, bestCombo: 0, startTime: 0, timerId: null, elapsed: 0, finished: false }
   };
 
-  // ===== STORAGE & SRS (SM-2 lite) =====
+  // ===== STORAGE & SCIENTIFIC SRS (Ebbinghaus Learning Steps + Bounded SM-2) =====
   function loadStore() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -37,68 +88,136 @@
   }
   function getWordProgress(id) {
     const store = loadStore();
-    return store[id] || { mastered: false, review: false, reps: 0, interval: 0, ease: 2.5, dueAt: 0, lastAt: 0 };
+    const raw = store[id];
+    const baseEase = state.settings.easeFactor || 1.8;
+    if (!raw) {
+      return { mastered: false, review: false, reps: 0, intervalMins: 0, ease: baseEase, dueAt: 0, lastAt: 0 };
+    }
+    // Migrate legacy day-based `interval` -> `intervalMins`
+    const intervalMins = typeof raw.intervalMins === 'number'
+      ? raw.intervalMins
+      : Math.round((raw.interval || 0) * 1440);
+    return Object.assign({ mastered: false, review: false, reps: 0, ease: baseEase, dueAt: 0, lastAt: 0 }, raw, { intervalMins });
   }
   function updateWordProgress(id, patch) {
     const store = loadStore();
-    const cur = store[id] || { mastered: false, review: false, reps: 0, interval: 0, ease: 2.5, dueAt: 0, lastAt: 0 };
+    const cur = getWordProgress(id);
     store[id] = Object.assign({}, cur, patch);
     saveStore(store);
     return store[id];
   }
   function isDue(prog) {
     if (!prog) return true;
-    if (prog.mastered && prog.dueAt > Date.now()) return false;
     if (prog.dueAt === 0) return !prog.mastered;
     return prog.dueAt <= Date.now();
   }
-  // quality: 1 = Again (0d), 2 = Hard (1d), 3 = Good (SM-2), 4 = Easy (bonus)
-  function applySrs(id, quality) {
-    const p = getWordProgress(id);
-    const now = Date.now();
-    const DAY = 86400000;
-    let { reps, interval, ease } = p;
+
+  function formatIntervalMins(mins) {
+    const m = Math.max(1, Math.round(mins));
+    if (m < 60) return `${m} phút`;
+    if (m < 1440) {
+      const h = Math.round((m / 60) * 10) / 10;
+      return `${h} giờ`;
+    }
+    const d = Math.round((m / 1440) * 10) / 10;
+    return `${d} ngày`;
+  }
+
+  // Scientific Ebbinghaus + Bounded SM-2 calculation (shared by preview & save)
+  // quality: 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
+  function computeNextSrs(p, quality) {
+    const cfg = state.settings;
+    const MIN_EASE = 1.3;
+    const MAX_EASE = 2.5;
+    const maxMins = Math.max(1, Number(cfg.maxIntervalDays) || 21) * 1440;
+    const againMins = Math.max(1, Number(cfg.againMins) || 10);
+    const hardMins = Math.max(15, Math.round((Number(cfg.hardHours) || 1) * 60));
+    const goodFirstMins = Math.max(60, Math.round((Number(cfg.goodDays) || 1) * 1440));
+    const easyFirstMins = Math.min(maxMins, Math.max(goodFirstMins, Math.round((Number(cfg.easyDays) || 3) * 1440)));
+    const defaultEase = Math.min(MAX_EASE, Math.max(MIN_EASE, Number(cfg.easeFactor) || 1.8));
+
+    let reps = p.reps || 0;
+    let prevMins = p.intervalMins || 0;
+    let ease = Math.min(MAX_EASE, Math.max(MIN_EASE, p.ease || defaultEase));
+    let intervalMins = againMins;
     let mastered = p.mastered;
     let review = p.review;
 
     if (quality === 1) {
+      // Again: short-term Ebbinghaus step (e.g. 10 mins)
       reps = 0;
-      interval = 0;
-      ease = Math.max(1.3, ease - 0.2);
+      intervalMins = againMins;
+      ease = Math.max(MIN_EASE, +(ease - 0.2).toFixed(2));
       mastered = false;
       review = true;
     } else if (quality === 2) {
-      reps = Math.max(1, reps);
-      interval = Math.max(1, Math.round((interval || 1) * 1.2));
-      ease = Math.max(1.3, ease - 0.15);
+      // Hard: review soon (1h on first exposure, or 1.15x previous capped at max)
+      if (reps === 0 || prevMins < 720) {
+        intervalMins = hardMins;
+        reps = 1;
+      } else {
+        intervalMins = Math.min(maxMins, Math.max(720, Math.round(prevMins * 1.15)));
+      }
+      ease = Math.max(MIN_EASE, +(ease - 0.15).toFixed(2));
+      mastered = false;
       review = true;
     } else if (quality === 3) {
+      // Good: Ebbinghaus ladder (e.g. 1d -> 3d -> 5d -> 9d -> 16d -> max 21d)
       reps += 1;
-      if (reps === 1) interval = 1;
-      else if (reps === 2) interval = 3;
-      else interval = Math.round(interval * ease);
-      if (reps >= 2) { mastered = true; review = false; }
+      if (reps === 1) {
+        intervalMins = goodFirstMins;
+      } else if (reps === 2) {
+        intervalMins = Math.min(maxMins, Math.max(goodFirstMins * 2, Math.round(goodFirstMins * 3)));
+      } else {
+        const base = Math.max(prevMins, goodFirstMins * 2);
+        intervalMins = Math.min(maxMins, Math.round(base * ease));
+      }
+      // Mastered only after passing at least 2 successful recalls (>= 2 days interval)
+      if (reps >= 2 && intervalMins >= 2880) {
+        mastered = true;
+        review = false;
+      } else {
+        review = false;
+      }
     } else {
+      // Easy: never jumps to 10d on first recall; uses configured easyDays (default 3d) then bounded ease
       reps += 1;
-      if (reps === 1) interval = 4;
-      else interval = Math.round(Math.max(4, interval * ease * 1.3));
-      ease = Math.min(3.0, ease + 0.15);
-      mastered = true;
+      if (reps === 1) {
+        intervalMins = easyFirstMins;
+      } else {
+        const base = Math.max(prevMins, easyFirstMins);
+        intervalMins = Math.min(maxMins, Math.round(base * Math.min(ease * 1.2, 2.2)));
+      }
+      ease = Math.min(MAX_EASE, +(ease + 0.1).toFixed(2));
+      mastered = (reps >= 2 || intervalMins >= 4320);
       review = false;
     }
 
-    const dueAt = quality === 1 ? now : now + interval * DAY;
-    return updateWordProgress(id, { reps, interval, ease, dueAt, lastAt: now, mastered, review });
+    return { reps, intervalMins, ease, mastered, review };
+  }
+
+  function applySrs(id, quality) {
+    const p = getWordProgress(id);
+    const now = Date.now();
+    const next = computeNextSrs(p, quality);
+    const dueAt = now + next.intervalMins * 60000;
+    return updateWordProgress(id, {
+      reps: next.reps,
+      intervalMins: next.intervalMins,
+      interval: +(next.intervalMins / 1440).toFixed(2),
+      ease: next.ease,
+      dueAt,
+      lastAt: now,
+      mastered: next.mastered,
+      review: next.review
+    });
   }
 
   function formatNextDue(prog) {
     if (!prog || !prog.dueAt) return 'Chưa học';
-    const diff = prog.dueAt - Date.now();
-    if (diff <= 0) return 'Đến hạn ôn';
-    const hrs = Math.round(diff / 3600000);
-    if (hrs < 24) return `Ôn sau ${hrs}h`;
-    const days = Math.round(diff / 86400000);
-    return `Ôn sau ${days} ngày`;
+    const diffMins = Math.round((prog.dueAt - Date.now()) / 60000);
+    if (diffMins <= 0) return 'Đến hạn ôn';
+    return `Ôn sau ${formatIntervalMins(diffMins)}`;
   }
 
   // ===== SPEECH SYNTHESIS (US / UK) =====
@@ -115,15 +234,15 @@
     }
   }
 
-  function speakText(text, accentOverride) {
+  function speakText(text, accentOverride, rateOverride) {
     if (!text || typeof speechSynthesis === 'undefined') return;
     try {
       speechSynthesis.cancel();
-      const lang = accentOverride || state.accent;
+      const lang = accentOverride || state.settings.accent || 'en-US';
       const clean = text.replace(/[*_`~]/g, '').replace(/\s+/g, ' ').trim();
       const utter = new SpeechSynthesisUtterance(clean);
       utter.lang = lang;
-      utter.rate = state.slowSpeech ? 0.72 : 0.96;
+      utter.rate = typeof rateOverride === 'number' ? rateOverride : (Number(state.settings.speechRate) || 0.96);
 
       refreshVoices();
       const voices = cachedVoices;
@@ -293,6 +412,8 @@
       : '';
 
     const compactPractice = state.mode !== 'list';
+    const curAccLabel = state.settings.accent === 'en-GB' ? '🇬🇧 UK' : '🇺🇸 US';
+    const isList = state.mode === 'list';
 
     root.innerHTML = `
       <div class="vs-header ${compactPractice ? 'is-practice' : ''}">
@@ -300,19 +421,35 @@
           <div class="vs-title-left">
             <h1 class="vs-h1">${esc(state.title || 'Từ vựng trọng tâm')}</h1>
             <div class="vs-stats-line">
-              <span class="vs-stat-pill green" title="Đã thuộc">✅ <span class="vs-stat-lbl">Đã thuộc: </span><strong>${st.mastered}/${st.total}</strong></span>
-              <span class="vs-stat-pill amber" title="Cần ôn">⭐ <span class="vs-stat-lbl">Cần ôn: </span><strong>${st.review}</strong></span>
-              <span class="vs-stat-pill indigo" title="Đến hạn SRS">⏰ <span class="vs-stat-lbl">SRS: </span><strong>${st.due}</strong></span>
+              <button class="vs-stat-pill green ${isList && state.filterStatus === 'mastered' ? 'active' : ''}"
+                      onclick="VocabStudio.quickFilterStatus('mastered')"
+                      title="Bấm để xem danh sách từ đã thuộc">
+                ✅ <span class="vs-stat-lbl">Đã thuộc: </span><strong>${st.mastered}/${st.total}</strong>
+              </button>
+              <button class="vs-stat-pill amber ${isList && state.filterStatus === 'review' ? 'active' : ''}"
+                      onclick="VocabStudio.quickFilterStatus('review')"
+                      title="Bấm để xem danh sách từ cần ôn">
+                ⭐ <span class="vs-stat-lbl">Cần ôn: </span><strong>${st.review}</strong>
+              </button>
+              <button class="vs-stat-pill indigo ${isList && state.filterStatus === 'due' ? 'active' : ''}"
+                      onclick="VocabStudio.quickFilterStatus('due')"
+                      title="Bấm để xem danh sách từ đến hạn ôn SRS">
+                ⏰ <span class="vs-stat-lbl">SRS: </span><strong>${st.due}</strong>
+              </button>
             </div>
           </div>
-          <div class="vs-speech-ctrl" title="Cài đặt giọng phát âm">
-            <button class="vs-chip ${state.accent === 'en-US' ? 'active' : ''}" onclick="VocabStudio.setAccent('en-US')">🇺🇸 US</button>
-            <button class="vs-chip ${state.accent === 'en-GB' ? 'active' : ''}" onclick="VocabStudio.setAccent('en-GB')">🇬🇧 UK</button>
-            <button class="vs-chip ${state.slowSpeech ? 'active' : ''}" onclick="VocabStudio.toggleSlow()" title="Đọc chậm 0.72x">🐢 Chậm</button>
+          <div class="vs-speech-ctrl">
+            <button class="vs-chip vs-settings-btn ${state.settingsOpen ? 'active' : ''}"
+                    onclick="VocabStudio.toggleSettings()"
+                    title="Cài đặt giọng đọc & thuật toán SRS">
+              ⚙️ <span class="vs-set-lbl">Cài đặt</span> <span class="vs-set-meta">(${curAccLabel})</span>
+            </button>
           </div>
         </div>
         <div class="vs-prog-bar"><div class="vs-prog-fill" style="width:${pct}%"></div></div>
       </div>
+
+      ${state.settingsOpen ? renderSettingsModal() : ''}
 
       <div class="vs-mode-tabs">
         <button class="vs-mode-btn ${state.mode === 'list' ? 'active' : ''}" onclick="VocabStudio.setMode('list')">📋 Danh sách</button>
@@ -329,10 +466,105 @@
     if (state.mode === 'game' && !state.game.finished) {
       startGameTimer();
     }
-    if (state.mode === 'typing') {
+    if (state.mode === 'typing' && !state.settingsOpen) {
       const inp = document.getElementById('vs-type-input');
       if (inp) setTimeout(() => inp.focus(), 40);
     }
+  }
+
+  function renderSettingsModal() {
+    const s = state.settings;
+    // Preview full Ebbinghaus ladder for Good
+    const ladder = [];
+    let sim = { reps: 0, intervalMins: 0, ease: s.easeFactor, mastered: false, review: false };
+    for (let k = 0; k < 5; k++) {
+      sim = computeNextSrs(sim, 3);
+      ladder.push(formatIntervalMins(sim.intervalMins));
+    }
+
+    return `
+      <div class="vs-modal-backdrop" onclick="if(event.target===this)VocabStudio.closeSettings()">
+        <div class="vs-modal" role="dialog" aria-label="Cài đặt Từ vựng và SRS">
+          <div class="vs-modal-head">
+            <h3>⚙️ Cài đặt Học từ vựng &amp; SRS</h3>
+            <button class="ex-nav-close" onclick="VocabStudio.closeSettings()" aria-label="Đóng">✕</button>
+          </div>
+          <div class="vs-modal-body">
+            <div class="vs-set-sec">
+              <div class="vs-set-title">🔊 Phát âm (Text-to-Speech)</div>
+              <div class="vs-set-row">
+                <span>Giọng đọc:</span>
+                <div class="vs-seg-group">
+                  <button class="vs-seg ${s.accent==='en-US'?'active':''}" onclick="VocabStudio.updateSetting('accent','en-US')">🇺🇸 Anh–Mỹ (US)</button>
+                  <button class="vs-seg ${s.accent==='en-GB'?'active':''}" onclick="VocabStudio.updateSetting('accent','en-GB')">🇬🇧 Anh–Anh (UK)</button>
+                </div>
+              </div>
+              <div class="vs-set-row">
+                <span>Tốc độ đọc:</span>
+                <div class="vs-seg-group">
+                  <button class="vs-seg ${s.speechRate===0.72?'active':''}" onclick="VocabStudio.updateSetting('speechRate',0.72)">🐢 0.72x</button>
+                  <button class="vs-seg ${s.speechRate===0.85?'active':''}" onclick="VocabStudio.updateSetting('speechRate',0.85)">0.85x</button>
+                  <button class="vs-seg ${s.speechRate===0.96?'active':''}" onclick="VocabStudio.updateSetting('speechRate',0.96)">Chuẩn</button>
+                  <button class="vs-seg ${s.speechRate===1.15?'active':''}" onclick="VocabStudio.updateSetting('speechRate',1.15)">1.15x</button>
+                </div>
+              </div>
+              <div class="vs-set-row">
+                <span>Tự động đọc khi lật thẻ / kiểm tra:</span>
+                <label class="vs-switch">
+                  <input type="checkbox" ${s.autoSpeak ? 'checked' : ''} onchange="VocabStudio.updateSetting('autoSpeak', this.checked)">
+                  <span>${s.autoSpeak ? 'Đang bật' : 'Đang tắt'}</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="vs-set-sec">
+              <div class="vs-set-title">🧠 Lặp lại ngắt quãng SRS (Chuẩn Ebbinghaus)</div>
+              <div class="vs-preset-row">
+                ${Object.keys(SRS_PRESETS).map(key => `
+                  <button class="vs-preset-btn ${s.srsPreset===key?'active':''}" onclick="VocabStudio.applySrsPreset('${key}')">
+                    ${esc(SRS_PRESETS[key].label)}
+                  </button>
+                `).join('')}
+              </div>
+              <div class="vs-srs-grid">
+                <label class="vs-field">
+                  <span>1. Quên (phút)</span>
+                  <input type="number" min="1" max="120" step="1" value="${s.againMins}" onchange="VocabStudio.updateSetting('againMins', +this.value, true)">
+                </label>
+                <label class="vs-field">
+                  <span>2. Khó lần đầu (giờ)</span>
+                  <input type="number" min="0.5" max="24" step="0.5" value="${s.hardHours}" onchange="VocabStudio.updateSetting('hardHours', +this.value, true)">
+                </label>
+                <label class="vs-field">
+                  <span>3. Tốt lần đầu (ngày)</span>
+                  <input type="number" min="0.5" max="5" step="0.5" value="${s.goodDays}" onchange="VocabStudio.updateSetting('goodDays', +this.value, true)">
+                </label>
+                <label class="vs-field">
+                  <span>4. Dễ lần đầu (ngày)</span>
+                  <input type="number" min="1" max="7" step="0.5" value="${s.easyDays}" onchange="VocabStudio.updateSetting('easyDays', +this.value, true)">
+                </label>
+                <label class="vs-field">
+                  <span>Hệ số giãn (Ease)</span>
+                  <input type="number" min="1.3" max="2.5" step="0.1" value="${s.easeFactor}" onchange="VocabStudio.updateSetting('easeFactor', +this.value, true)">
+                </label>
+                <label class="vs-field">
+                  <span>Tối đa (ngày)</span>
+                  <input type="number" min="3" max="60" step="1" value="${s.maxIntervalDays}" onchange="VocabStudio.updateSetting('maxIntervalDays', +this.value, true)">
+                </label>
+              </div>
+              <div class="vs-srs-preview">
+                📈 Chuỗi ôn khi chọn <strong>Tốt</strong> liên tiếp: <strong>${ladder.join(' → ')}</strong> (tối đa ${s.maxIntervalDays} ngày)
+              </div>
+            </div>
+          </div>
+          <div class="vs-modal-foot">
+            <button class="ex-btn" onclick="VocabStudio.resetSettings()">🔄 Mặc định</button>
+            <button class="ex-btn vs-danger-btn" onclick="VocabStudio.resetUnitProgress()">🗑 Xóa tiến độ Unit</button>
+            <button class="ex-btn primary" style="margin-left:auto" onclick="VocabStudio.closeSettings()">✓ Xong</button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // ===== 1. LIST VIEW (GRID & TABLE) =====
@@ -384,12 +616,25 @@
       </div>
     `;
 
+    const statusBannerMap = {
+      mastered: '✅ Đang xem danh sách: <strong>Đã thuộc</strong>',
+      review: '⭐ Đang xem danh sách: <strong>Cần ôn</strong>',
+      due: '⏰ Đang xem danh sách: <strong>Đến hạn ôn SRS</strong>',
+      unmastered: '○ Đang xem danh sách: <strong>Chưa thuộc</strong>'
+    };
+    const activeBanner = state.filterStatus !== 'all'
+      ? `<div class="vs-filter-banner">
+          <span>${statusBannerMap[state.filterStatus]} (${words.length} từ)</span>
+          <button class="vs-banner-clear" onclick="VocabStudio.setFilter('filterStatus','all')">✕ Xem tất cả (${state.words.length})</button>
+        </div>`
+      : '';
+
     if (words.length === 0) {
-      return toolbar + `<div class="vs-empty">🔎 Không tìm thấy từ vựng nào khớp với bộ lọc hiện tại.</div>`;
+      return activeBanner + toolbar + `<div class="vs-empty">🔎 Không tìm thấy từ vựng nào trong mục này.</div>`;
     }
 
     if (effectiveView === 'table') {
-      return toolbar + `
+      return activeBanner + toolbar + `
         <div class="vs-table-wrap">
           <table class="vs-table">
             <thead>
@@ -439,7 +684,7 @@
     }
 
     // Card Grid View
-    return toolbar + `
+    return activeBanner + toolbar + `
       <div class="vs-grid">
         ${words.map(w => {
           const p = getWordProgress(w.id);
@@ -560,12 +805,12 @@
 
         ${fc.flipped ? `
           <div class="vs-srs-bar">
-            <div class="vs-srs-prompt">Bạn nhớ từ này ở mức nào? (Lặp lại ngắt quãng SRS)</div>
+            <div class="vs-srs-prompt">Bạn nhớ từ này ở mức nào? (Chuẩn Ebbinghaus SRS)</div>
             <div class="vs-srs-btns">
-              <button class="vs-srs-btn q1" onclick="VocabStudio.fcRate(1)"><strong>1. Quên</strong><span>Ôn lại ngay</span></button>
-              <button class="vs-srs-btn q2" onclick="VocabStudio.fcRate(2)"><strong>2. Khó</strong><span>1 ngày</span></button>
-              <button class="vs-srs-btn q3" onclick="VocabStudio.fcRate(3)"><strong>3. Tốt</strong><span>${p.reps >= 1 ? Math.max(3, Math.round((p.interval||1)*p.ease)) : 1} ngày</span></button>
-              <button class="vs-srs-btn q4" onclick="VocabStudio.fcRate(4)"><strong>4. Dễ</strong><span>${Math.max(4, Math.round((p.interval||3)*p.ease*1.3))} ngày</span></button>
+              <button class="vs-srs-btn q1" onclick="VocabStudio.fcRate(1)"><strong>1. Quên</strong><span>${formatIntervalMins(computeNextSrs(p, 1).intervalMins)}</span></button>
+              <button class="vs-srs-btn q2" onclick="VocabStudio.fcRate(2)"><strong>2. Khó</strong><span>${formatIntervalMins(computeNextSrs(p, 2).intervalMins)}</span></button>
+              <button class="vs-srs-btn q3" onclick="VocabStudio.fcRate(3)"><strong>3. Tốt</strong><span>${formatIntervalMins(computeNextSrs(p, 3).intervalMins)}</span></button>
+              <button class="vs-srs-btn q4" onclick="VocabStudio.fcRate(4)"><strong>4. Dễ</strong><span>${formatIntervalMins(computeNextSrs(p, 4).intervalMins)}</span></button>
             </div>
           </div>
         ` : `
@@ -768,7 +1013,7 @@
           </div>
           ${t.submode === 'dictation' ? `
             <div class="vs-dict-audio">
-              <button class="vs-big-audio" onclick="VocabStudio.speak('${escJs(cur.word)}')">🔊 Nghe từ (${state.accent === 'en-US' ? 'US' : 'UK'})</button>
+              <button class="vs-big-audio" onclick="VocabStudio.speak('${escJs(cur.word)}')">🔊 Nghe từ (${state.settings.accent === 'en-GB' ? 'UK' : 'US'})</button>
               <button class="ex-btn" onclick="VocabStudio.speakSlowOnce('${escJs(cur.word)}')">🐢 Nghe chậm</button>
             </div>
             <div class="vs-quiz-sub">Nghe phát âm và gõ lại đúng chính tả tiếng Anh (${cur.word.split(' ').length} từ)</div>
@@ -913,6 +1158,10 @@
   document.addEventListener('keydown', e => {
     const root = document.getElementById('vocab-studio-root');
     if (!root) return;
+    if (state.settingsOpen) {
+      if (e.key === 'Escape') { state.settingsOpen = false; render(); }
+      return;
+    }
 
     const isSearchInput = e.target && (e.target.id === 'search-input' || e.target.id === 'vs-search-input');
     if (isSearchInput) return;
@@ -974,15 +1223,46 @@
 
   // ===== PUBLIC API =====
   window.VocabStudio = {
-    setAccent(a) { state.accent = a; render(); },
-    toggleSlow() { state.slowSpeech = !state.slowSpeech; render(); },
-    speak(text, accentOverride) { speakText(text, accentOverride); },
-    speakSlowOnce(text) {
-      const prev = state.slowSpeech;
-      state.slowSpeech = true;
-      speakText(text);
-      state.slowSpeech = prev;
+    toggleSettings() { state.settingsOpen = !state.settingsOpen; render(); },
+    closeSettings() { state.settingsOpen = false; render(); },
+    updateSetting(key, val, markCustom) {
+      if (typeof val === 'number' && (isNaN(val) || val <= 0)) return;
+      state.settings[key] = val;
+      if (markCustom) state.settings.srsPreset = 'custom';
+      saveSettings(state.settings);
+      render();
     },
+    applySrsPreset(presetKey) {
+      const preset = SRS_PRESETS[presetKey];
+      if (!preset) return;
+      state.settings = Object.assign({}, state.settings, preset, { srsPreset: presetKey });
+      saveSettings(state.settings);
+      render();
+    },
+    resetSettings() {
+      state.settings = defaultSettings();
+      saveSettings(state.settings);
+      render();
+    },
+    resetUnitProgress() {
+      if (typeof confirm === 'function' && !confirm('Xóa toàn bộ tiến độ từ vựng (Đã thuộc, Cần ôn, SRS) của unit này?')) return;
+      const store = loadStore();
+      state.words.forEach(w => { delete store[w.id]; });
+      saveStore(store);
+      state.settingsOpen = false;
+      render();
+    },
+    quickFilterStatus(status) {
+      if (state.mode === 'list' && state.filterStatus === status) {
+        state.filterStatus = 'all';
+      } else {
+        state.mode = 'list';
+        state.filterStatus = status;
+      }
+      render();
+    },
+    speak(text, accentOverride) { speakText(text, accentOverride); },
+    speakSlowOnce(text) { speakText(text, null, 0.72); },
     setMode(m) {
       state.mode = m;
       if (m === 'flashcard') initFlashcards(state.fc.scope);
@@ -1002,12 +1282,15 @@
     setFilter(key, val) { state[key] = val; render(); },
     toggleFlag(id, flag) {
       const p = getWordProgress(id);
+      const maxDay = Math.min(state.settings.maxIntervalDays || 21, Math.max(3, state.settings.easyDays || 3));
       if (flag === 'mastered') {
         const next = !p.mastered;
         updateWordProgress(id, {
           mastered: next,
           review: next ? false : p.review,
-          dueAt: next ? Date.now() + 7 * 86400000 : Date.now()
+          reps: next ? Math.max(2, p.reps) : 0,
+          intervalMins: next ? maxDay * 1440 : 0,
+          dueAt: next ? Date.now() + maxDay * 86400000 : Date.now()
         });
       } else if (flag === 'review') {
         const next = !p.review;
@@ -1025,7 +1308,7 @@
     fcShuffle() { initFlashcards(state.fc.scope); render(); },
     fcFlip() {
       state.fc.flipped = !state.fc.flipped;
-      if (state.fc.flipped && state.fc.deck[state.fc.idx]) {
+      if (state.fc.flipped && state.settings.autoSpeak && state.fc.deck[state.fc.idx]) {
         speakText(state.fc.deck[state.fc.idx].word);
       }
       render();
@@ -1070,7 +1353,7 @@
       } else {
         applySrs(cur.id, 1);
       }
-      speakText(cur.word);
+      if (state.settings.autoSpeak) speakText(cur.word);
       render();
     },
     quizNext() {
@@ -1108,7 +1391,7 @@
       } else {
         applySrs(cur.id, 1);
       }
-      speakText(cur.word);
+      if (state.settings.autoSpeak) speakText(cur.word);
       render();
     },
     typingNext() {
