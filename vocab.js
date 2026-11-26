@@ -329,9 +329,9 @@
     if (state.mode === 'game' && !state.game.finished) {
       startGameTimer();
     }
-    if (state.mode === 'typing' && !state.typing.answered) {
+    if (state.mode === 'typing') {
       const inp = document.getElementById('vs-type-input');
-      if (inp) setTimeout(() => inp.focus(), 60);
+      if (inp) setTimeout(() => inp.focus(), 40);
     }
   }
 
@@ -783,16 +783,19 @@
           <input id="vs-type-input" type="text" class="ex-input ${t.answered ? (t.correct ? 'vs-inp-ok' : 'vs-inp-bad') : ''}" style="max-width:100%"
                  value="${esc(t.userInput || '')}"
                  placeholder="Gõ từ tiếng Anh..."
+                 enterkeyhint="${t.answered ? 'next' : 'done'}"
                  autocomplete="off" spellcheck="false"
                  ${t.answered ? 'readonly' : ''}
-                 oninput="VocabStudio.typingInput(this.value)"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();${t.answered ? 'VocabStudio.typingNext()' : 'VocabStudio.typingCheck()'}}">
+                 oninput="VocabStudio.typingInput(this.value)">
           ${!t.answered ? `
             <button class="ex-btn" onclick="VocabStudio.typingHint()">💡 Gợi ý</button>
             <button class="ex-btn primary" onclick="VocabStudio.typingCheck()">Kiểm tra</button>
           ` : `
             <button class="ex-btn primary" onclick="VocabStudio.typingNext()">Từ tiếp theo →</button>
           `}
+        </div>
+        <div class="vs-kbd-hint" style="margin-top:8px;font-size:.78rem;color:var(--gray-500)">
+          Phím tắt: <code>Enter</code> kiểm tra / từ tiếp theo · <code>Tab</code> nghe phát âm · <code>Shift+Tab</code> nghe chậm · <code>Alt+H</code> gợi ý
         </div>
 
         ${t.answered ? `
@@ -909,25 +912,62 @@
   // ===== KEYBOARD SHORTCUTS =====
   document.addEventListener('keydown', e => {
     const root = document.getElementById('vocab-studio-root');
-    if (!root || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (!root) return;
+
+    const isSearchInput = e.target && (e.target.id === 'search-input' || e.target.id === 'vs-search-input');
+    if (isSearchInput) return;
+
+    // Typing / Dictation shortcuts work seamlessly even while focused inside #vs-type-input
+    if (state.mode === 'typing' && state.typing.idx < state.typing.total) {
+      const cur = state.typing.deck[state.typing.idx];
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (state.typing.answered) window.VocabStudio.typingNext();
+        else window.VocabStudio.typingCheck();
+        return;
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (cur) {
+          if (e.shiftKey) window.VocabStudio.speakSlowOnce(cur.word);
+          else speakText(cur.word);
+        }
+        return;
+      }
+      if (!state.typing.answered && e.altKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        window.VocabStudio.typingHint();
+        return;
+      }
+      if (state.typing.answered && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        if (cur) speakText(cur.word);
+        return;
+      }
+    }
+
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) return;
 
     if (state.mode === 'flashcard' && state.fc.idx < state.fc.deck.length) {
+      const cur = state.fc.deck[state.fc.idx];
       if (e.code === 'Space') { e.preventDefault(); window.VocabStudio.fcFlip(); }
-      else if (e.key === 'r' || e.key === 'R') { speakText(state.fc.deck[state.fc.idx].word); }
-      else if (state.fc.flipped && ['1', '2', '3', '4'].includes(e.key)) {
+      else if (e.key === 'r' || e.key === 'R' || e.key === 'Tab') {
+        e.preventDefault();
+        if (e.shiftKey) window.VocabStudio.speakSlowOnce(cur.word);
+        else speakText(cur.word);
+      } else if (state.fc.flipped && ['1', '2', '3', '4'].includes(e.key)) {
         window.VocabStudio.fcRate(parseInt(e.key));
       }
     } else if (state.mode === 'quiz' && state.quiz.idx < state.quiz.total) {
-      if (!state.quiz.answered && ['1', '2', '3', '4'].includes(e.key)) {
+      const cur = state.quiz.deck[state.quiz.idx];
+      if (e.key === 'r' || e.key === 'R' || e.key === 'Tab') {
+        e.preventDefault();
+        if (cur) speakText(cur.word);
+      } else if (!state.quiz.answered && ['1', '2', '3', '4'].includes(e.key)) {
         window.VocabStudio.quizPick(parseInt(e.key) - 1);
       } else if (state.quiz.answered && (e.key === 'Enter' || e.code === 'Space')) {
         e.preventDefault();
         window.VocabStudio.quizNext();
-      }
-    } else if (state.mode === 'typing' && state.typing.answered && state.typing.idx < state.typing.total) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        window.VocabStudio.typingNext();
       }
     }
   });
