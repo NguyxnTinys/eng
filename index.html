@@ -1929,9 +1929,10 @@ function renderInteractiveExercises(exMd, ansMd) {
         <div class="ex-input-row">
           <input type="text" class="ex-input" id="input-${b.num}"
                  placeholder="Nhập đáp án cho chỗ trống (${b.num})..."
+                 enterkeyhint="next"
                  oninput="onExInput(${b.num})"
                  onfocus="setCurrentQuestion(${b.num})"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();checkOneEx(${b.num})}">
+                 onkeydown="handleExKeydown(event, ${b.num})">
           <button class="ex-check" onclick="checkOneEx(${b.num})">Kiểm tra</button>
         </div>
         <div class="ex-feedback" id="fb-${b.num}"></div>
@@ -2020,9 +2021,10 @@ function renderInteractiveExercises(exMd, ansMd) {
         <div class="ex-input-row">
           <input type="text" class="ex-input" id="input-${num}"
                  placeholder="Nhập đáp án..."
+                 enterkeyhint="next"
                  oninput="onExInput(${num})"
                  onfocus="setCurrentQuestion(${num})"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();checkOneEx(${num})}">
+                 onkeydown="handleExKeydown(event, ${num})">
           <button class="ex-check" onclick="checkOneEx(${num})">Kiểm tra</button>
         </div>
         <div class="ex-feedback" id="fb-${num}"></div>
@@ -2421,6 +2423,31 @@ function getActiveExItems() {
     return Array.from(document.querySelectorAll('.ex-item'));
   }
   return Array.from(document.querySelectorAll(`.ex-item[data-part="${window._exActivePart}"]`));
+}
+
+function handleExKeydown(event, num) {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+
+  const inp = document.getElementById(`input-${num}`);
+  // Check current question if user typed something
+  if (inp && inp.value.trim()) {
+    checkOneEx(num);
+  }
+
+  // Move focus to next (or previous with Shift+Enter) visible input
+  const items = getActiveExItems();
+  const idx = items.findIndex(el => parseInt(el.dataset.num) === num);
+  const nextIdx = event.shiftKey ? idx - 1 : idx + 1;
+  if (idx >= 0 && nextIdx >= 0 && nextIdx < items.length) {
+    const nextNum = parseInt(items[nextIdx].dataset.num);
+    const nextInp = document.getElementById(`input-${nextNum}`);
+    if (nextInp) {
+      nextInp.focus();
+      setCurrentQuestion(nextNum);
+      items[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 }
 
 function norm(s) {
