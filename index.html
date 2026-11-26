@@ -143,6 +143,11 @@
     font-weight: 600;
     border-left-color: var(--accent);
   }
+  .unit-item-name { flex: 1; min-width: 0; }
+  .unit-prog-badge {
+    font-size: .68rem; font-weight: 700; padding: 1px 6px; border-radius: 999px;
+    background: var(--green-light); color: var(--green); flex-shrink: 0;
+  }
 
   /* ===== OVERLAY (mobile) ===== */
   #overlay {
@@ -1359,12 +1364,16 @@ function buildSidebar(filterText='') {
         </svg>
       </div>
       <div class="unit-list ${isOpen?'open':''}">
-        ${units.map(u => `
+        ${units.map(u => {
+          const uKey = `${cat.folder}/${u.folder}`;
+          const doneCnt = getUnitExDoneCount(uKey);
+          return `
           <div class="unit-item ${activeUnit && activeUnit.unitFolder===u.folder && activeUnit.catFolder===cat.folder ? 'active':''}"
                onclick="loadUnit('${cat.folder}','${u.folder}','${escJ(u.name)}','${escJ(cat.name)}')">
-            ${filterText ? highlight(u.name, filterText) : u.name}
-          </div>
-        `).join('')}
+            <span class="unit-item-name">${filterText ? highlight(u.name, filterText) : u.name}</span>
+            ${doneCnt > 0 ? `<span class="unit-prog-badge" title="Đã làm ${doneCnt} câu bài tập">${doneCnt}</span>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     `;
     inner.appendChild(catEl);
@@ -1418,6 +1427,7 @@ async function loadUnit(catFolder, unitFolder, unitName, catName) {
 
   // Switch to default tab
   if (!activeTab) activeTab = 'theory';
+  saveLastSession();
   switchTab(activeTab, false);
 
   // Close mobile sidebar
@@ -1427,6 +1437,7 @@ async function loadUnit(catFolder, unitFolder, unitName, catName) {
 // ===== TAB SWITCH =====
 async function switchTab(tab, updateActive=true) {
   activeTab = tab;
+  saveLastSession();
 
   // Update tab buttons
   document.querySelectorAll('.tab-btn').forEach(b => {
@@ -2080,6 +2091,132 @@ function renderInteractiveExercises(exMd, ansMd) {
   return toolbarHtml + bodyHtml;
 }
 
+// ===== EXERCISE PROGRESS STORAGE (localStorage) =====
+const EX_STORAGE_KEY = 'eg_ex_progress_v1';
+const SESSION_STORAGE_KEY = 'eg_last_session_v1';
+
+function loadExStore() {
+  try { return JSON.parse(localStorage.getItem(EX_STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveExStore(store) {
+  try { localStorage.setItem(EX_STORAGE_KEY, JSON.stringify(store)); }
+  catch {}
+}
+function getCurrentUnitKey() {
+  return activeUnit ? `${activeUnit.catFolder}/${activeUnit.unitFolder}` : '';
+}
+function getUnitExDoneCount(unitKey) {
+  const store = loadExStore();
+  const u = store[unitKey];
+  if (!u || !u.items) return 0;
+  let cnt = 0;
+  for (const k in u.items) {
+    const st = u.items[k] && u.items[k].status;
+    if (st === 'correct' || st === 'wrong' || st === 'revealed') cnt++;
+  }
+  return cnt;
+}
+function saveExItemState(num, val, status) {
+  const uKey = getCurrentUnitKey();
+  if (!uKey) return;
+  const store = loadExStore();
+  if (!store[uKey]) store[uKey] = { activePart: window._exActivePart || 'all', items: {} };
+  if (!store[uKey].items) store[uKey].items = {};
+  if (!val && !status) {
+    delete store[uKey].items[num];
+  } else {
+    store[uKey].items[num] = { val: val || '', status: status || '' };
+  }
+  saveExStore(store);
+}
+function saveExActivePart(partId) {
+  const uKey = getCurrentUnitKey();
+  if (!uKey) return;
+  const store = loadExStore();
+  if (!store[uKey]) store[uKey] = { activePart: partId, items: {} };
+  else store[uKey].activePart = partId;
+  saveExStore(store);
+}
+function saveLastSession() {
+  if (!activeUnit) return;
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+      catFolder: activeUnit.catFolder,
+      unitFolder: activeUnit.unitFolder,
+      unitName: activeUnit.unitName,
+      catName: activeUnit.catName,
+      tab: activeTab || 'theory'
+    }));
+  } catch {}
+}
+function loadLastSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || 'null'); }
+  catch { return null; }
+}
+
+function renderExFeedback(num, status) {
+  const fb = document.getElementById(`fb-${num}`);
+  const ans = window._exAnswers[num];
+  if (!fb) return;
+  if (!ans) {
+    fb.innerHTML = `<div class="ex-feedback-inner"><div class="fb-header"><span>ℹ️</span> Chưa có đáp án cho câu này.</div></div>`;
+    fb.style.display = 'block';
+    return;
+  }
+  if (status === 'correct') {
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">✅ <strong>Chính xác!</strong> Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+  } else if (status === 'wrong') {
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">❌ Chưa đúng. Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+  } else if (status === 'revealed') {
+    fb.innerHTML = `<div class="ex-feedback-inner">
+      <div class="fb-header">💡 Đáp án: <strong>${escHtml(ans.display)}</strong></div>
+      <div class="fb-explain">${inline(ans.explanation)}</div>
+    </div>`;
+  }
+  fb.style.display = 'block';
+}
+
+function restoreExState() {
+  const uKey = getCurrentUnitKey();
+  if (!uKey) return;
+  const store = loadExStore();
+  const saved = store[uKey];
+  if (!saved) return;
+
+  if (saved.items) {
+    Object.keys(saved.items).forEach(k => {
+      const num = parseInt(k);
+      const entry = saved.items[k];
+      if (!entry) return;
+      const inp = document.getElementById(`input-${num}`);
+      const item = document.getElementById(`q-${num}`);
+      if (inp && typeof entry.val === 'string') inp.value = entry.val;
+      if (item && entry.status) {
+        item.classList.remove('correct', 'wrong', 'revealed');
+        if (['correct', 'wrong', 'revealed'].includes(entry.status)) {
+          item.classList.add(entry.status);
+          renderExFeedback(num, entry.status);
+        }
+      }
+    });
+  }
+
+  // Restore last selected Part if valid
+  if (saved.activePart && saved.activePart !== 'all') {
+    const exists = window._exParts.some(p => p.id === saved.activePart);
+    if (exists) {
+      selectExPart(saved.activePart, false, false);
+    }
+  }
+}
+
 // ===== EXERCISE NAVIGATOR (PART & QUESTION MENU) =====
 function initExNavigator() {
   const nav = document.getElementById('ex-nav');
@@ -2101,7 +2238,9 @@ function initExNavigator() {
     document.body.classList.remove('ex-nav-open');
   }
 
+  restoreExState();
   renderExNavQuestions();
+  updateExScore();
   refreshExNavStatus();
 }
 
@@ -2157,8 +2296,9 @@ function renderExNavQuestions() {
   refreshExNavStatus();
 }
 
-function selectExPart(partId, scrollToPart=true) {
+function selectExPart(partId, scrollToPart=true, persist=true) {
   window._exActivePart = partId;
+  if (persist) saveExActivePart(partId);
 
   // Toggle visibility of part sections
   document.querySelectorAll('.ex-part-section').forEach(sec => {
@@ -2225,10 +2365,16 @@ function onExInput(num) {
   const btn = document.getElementById(`qbtn-${num}`);
   const item = document.getElementById(`q-${num}`);
   const inp = document.getElementById(`input-${num}`);
-  if (!btn || !item || !inp) return;
-  if (!item.classList.contains('correct') && !item.classList.contains('wrong') && !item.classList.contains('revealed')) {
+  if (!item || !inp) return;
+  let curStatus = '';
+  if (item.classList.contains('correct')) curStatus = 'correct';
+  else if (item.classList.contains('wrong')) curStatus = 'wrong';
+  else if (item.classList.contains('revealed')) curStatus = 'revealed';
+
+  if (btn && !curStatus) {
     btn.classList.toggle('filled', inp.value.trim().length > 0);
   }
+  saveExItemState(num, inp.value, curStatus);
 }
 
 function refreshExNavStatus() {
@@ -2284,7 +2430,7 @@ function norm(s) {
     .replace(/[""]/g, '"');
 }
 
-function checkOneEx(num) {
+function checkOneEx(num, skipSidebarRefresh=false) {
   const inp = document.getElementById(`input-${num}`);
   const fb = document.getElementById(`fb-${num}`);
   const item = document.getElementById(`q-${num}`);
@@ -2295,42 +2441,39 @@ function checkOneEx(num) {
 
   const ans = window._exAnswers[num];
   if (!ans) {
-    fb.innerHTML = `<div class="ex-feedback-inner"><div class="fb-header"><span>ℹ️</span> Chưa có đáp án cho câu này.</div></div>`;
-    fb.style.display = 'block';
+    renderExFeedback(num, '');
     return;
   }
 
   const correct = ans.accept.some(a => norm(a) === userVal);
+  const status = correct ? 'correct' : 'wrong';
   item.classList.remove('correct', 'wrong', 'revealed');
-  item.classList.add(correct ? 'correct' : 'wrong');
+  item.classList.add(status);
 
-  if (correct) {
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">✅ <strong>Chính xác!</strong> Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-  } else {
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">❌ Chưa đúng. Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-  }
-  fb.style.display = 'block';
+  renderExFeedback(num, status);
+  saveExItemState(num, inp.value, status);
   updateExScore();
   refreshExNavStatus();
+  if (!skipSidebarRefresh) buildSidebar(document.getElementById('search-input').value);
 }
 
 function checkAllEx() {
   getActiveExItems().forEach(el => {
     const num = parseInt(el.dataset.num);
     const inp = document.getElementById(`input-${num}`);
-    if (inp && inp.value.trim()) checkOneEx(num);
+    if (inp && inp.value.trim()) checkOneEx(num, true);
   });
   updateExScore();
   refreshExNavStatus();
+  buildSidebar(document.getElementById('search-input').value);
 }
 
 function showAllEx() {
+  const uKey = getCurrentUnitKey();
+  const store = loadExStore();
+  if (uKey && !store[uKey]) store[uKey] = { activePart: window._exActivePart || 'all', items: {} };
+  if (uKey && !store[uKey].items) store[uKey].items = {};
+
   getActiveExItems().forEach(el => {
     const num = parseInt(el.dataset.num);
     const ans = window._exAnswers[num];
@@ -2342,18 +2485,22 @@ function showAllEx() {
 
     el.classList.remove('correct', 'wrong');
     el.classList.add('revealed');
+    renderExFeedback(num, 'revealed');
 
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">💡 Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-    fb.style.display = 'block';
+    if (uKey) store[uKey].items[num] = { val: inp.value, status: 'revealed' };
   });
+
+  if (uKey) saveExStore(store);
   updateExScore();
   refreshExNavStatus();
+  buildSidebar(document.getElementById('search-input').value);
 }
 
 function resetAllEx() {
+  const uKey = getCurrentUnitKey();
+  const store = loadExStore();
+  const savedItems = (uKey && store[uKey] && store[uKey].items) ? store[uKey].items : null;
+
   getActiveExItems().forEach(el => {
     el.classList.remove('correct', 'wrong', 'revealed');
     const num = parseInt(el.dataset.num);
@@ -2361,9 +2508,13 @@ function resetAllEx() {
     const fb = document.getElementById(`fb-${num}`);
     if (inp) inp.value = '';
     if (fb) { fb.innerHTML = ''; fb.style.display = 'none'; }
+    if (savedItems) delete savedItems[num];
   });
+
+  if (uKey && store[uKey]) saveExStore(store);
   updateExScore();
   refreshExNavStatus();
+  buildSidebar(document.getElementById('search-input').value);
 }
 
 function updateExScore() {
@@ -2383,11 +2534,16 @@ function updateExScore() {
 }
 
 // ===== INIT =====
-buildSidebar();
-
-// Auto-open first category
-openCats.add('01_Tenses');
-buildSidebar();
+const lastSess = loadLastSession();
+if (lastSess && lastSess.catFolder && lastSess.unitFolder) {
+  openCats.add(lastSess.catFolder);
+  activeTab = lastSess.tab || 'theory';
+  buildSidebar();
+  loadUnit(lastSess.catFolder, lastSess.unitFolder, lastSess.unitName || lastSess.unitFolder, lastSess.catName || lastSess.catFolder);
+} else {
+  openCats.add('01_Tenses');
+  buildSidebar();
+}
 </script>
 </body>
 </html>
