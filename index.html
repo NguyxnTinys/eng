@@ -1000,21 +1000,68 @@
   .ex-check:hover { background: var(--accent-dark); }
 
   .ex-feedback {
-    display: none; margin-top: 10px; padding-left: 36px;
+    display: none; margin-top: 12px; padding-left: 36px;
   }
   .ex-feedback-inner {
-    padding: 12px 16px; border-radius: 8px;
-    background: var(--gray-50); font-size: .88rem; line-height: 1.65;
+    padding: 14px 16px; border-radius: 10px;
+    background: #ffffff; font-size: .88rem; line-height: 1.65;
     border: 1px solid var(--gray-200);
+    box-shadow: 0 2px 6px rgba(15,23,42,.04);
   }
   .fb-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 8px; font-size: .92rem;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding-bottom: 10px; margin-bottom: 10px;
+    border-bottom: 1px solid var(--gray-200);
+    font-size: .9rem;
   }
-  .fb-explain {
-    color: var(--gray-600); border-top: 1px solid var(--gray-200);
-    padding-top: 8px; margin-top: 8px;
+  .fb-status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: .8rem; font-weight: 700; white-space: nowrap;
   }
+  .fb-status-pill.correct { background: #dcfce7; color: #166534; }
+  .fb-status-pill.wrong { background: #fee2e2; color: #991b1b; }
+  .fb-status-pill.revealed { background: #dbeafe; color: #1e40af; }
+  .fb-ans-label { color: var(--gray-500); font-size: .82rem; font-weight: 600; }
+  .fb-ans-chip {
+    background: #eef2ff; color: #312e81; border: 1px solid #c7d2fe;
+    padding: 2px 10px; border-radius: 6px; font-weight: 800; font-size: .9rem;
+  }
+  .fb-alt-chip {
+    font-size: .78rem; color: var(--gray-500);
+  }
+  .fb-sections {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .fb-sec {
+    padding: 9px 12px; border-radius: 8px;
+    font-size: .86rem; line-height: 1.6;
+  }
+  .fb-sec-title {
+    font-size: .74rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .04em; margin-bottom: 3px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .fb-sec.explain {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3.5px solid var(--accent);
+    color: #1e293b;
+  }
+  .fb-sec.explain .fb-sec-title { color: var(--accent-dark); }
+  .fb-sec.trans {
+    background: #f0f9ff; border: 1px solid #bae6fd; border-left: 3.5px solid #0284c7;
+    color: #0c4a6e;
+  }
+  .fb-sec.trans .fb-sec-title { color: #0369a1; }
+  .fb-sec.elim {
+    background: #f5f3ff; border: 1px solid #ddd6fe; border-left: 3.5px solid #7c3aed;
+    color: #4c1d95;
+  }
+  .fb-sec.elim .fb-sec-title { color: #6d28d9; }
+  .fb-sec.trap {
+    background: #fffbeb; border: 1px solid #fde68a; border-left: 3.5px solid #f59e0b;
+    color: #78350f;
+  }
+  .fb-sec.trap .fb-sec-title { color: #b45309; }
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 1180px) {
@@ -1099,6 +1146,8 @@
     .stat-card { padding: 16px 20px; }
     .ex-input-row { padding-left: 0; flex-wrap: wrap; }
     .ex-input { max-width: 100%; }
+    .ex-feedback { padding-left: 0; }
+    .ex-feedback-inner { padding: 10px 12px; }
     .ex-toolbar {
       position: sticky; top: var(--header-h); z-index: 30;
       padding: 6px 10px; gap: 6px;
@@ -1721,10 +1770,6 @@ function inline(text) {
   t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   // Line break <br>
   t = t.replace(/  \n/g, '<br>');
-  // ⚠️ Bẫy wrap
-  if (t.includes('⚠️')) {
-    t = `<span style="color:var(--orange)">${t}</span>`;
-  }
 
   return t;
 }
@@ -2157,31 +2202,107 @@ function loadLastSession() {
   catch { return null; }
 }
 
+function formatExplanationHtml(raw) {
+  if (!raw) return '';
+  let text = raw.trim();
+  let trap = '';
+  let elim = '';
+  let trans = '';
+
+  // 1. Extract Trap / Warning section ("⚠️ Bẫy / Lưu ý:" or "* **⚠️ Bẫy ngữ pháp:**")
+  const trapRe = /(?:^|\s)(?:[-*]\s+)?(?:\*\*⚠️[^*]*\*\*|⚠️\s*\*\*[^*]*\*\*|⚠️\s*Bẫy[^:]*:)\s*:?\s*([\s\S]*)$/i;
+  const tm = text.match(trapRe);
+  if (tm) {
+    trap = tm[1].trim();
+    text = text.slice(0, tm.index).trim();
+  }
+
+  // 2. Extract Distractor / Elimination section if present
+  const elimRe = /(?:^|\s)(?:[-*]\s+)?\*\*(?:Loại trừ|Phân tích đáp án nhiễu|Loại đáp án nhiễu)[^*]*\*\*\s*:?\s*([\s\S]*)$/i;
+  const em = text.match(elimRe);
+  if (em) {
+    elim = em[1].trim();
+    text = text.slice(0, em.index).trim();
+  }
+
+  // 3. Extract Translation ("Dịch: *...*", "*(Dịch: ...)*", or trailing parenthesized Vietnamese gloss)
+  const transRe1 = /\*\(\s*(?:Dịch|Nghĩa)\s*:\s*([^)]+)\)\*/i;
+  const transRe2 = /(?:^|\s)(?:\*\*)?(?:Dịch|Nghĩa)(?:\*\*)?\s*:\s*\*([^*]+)\*/i;
+  const transRe3 = /\*\(([^)]*[\u00C0-\u1EF9][^)]*)\)\*\s*$/;
+  let trm = text.match(transRe1) || text.match(transRe2) || text.match(transRe3);
+  if (trm) {
+    trans = trm[1].trim();
+    text = (text.slice(0, trm.index) + ' ' + text.slice(trm.index + trm[0].length)).trim();
+  }
+
+  // 4. Clean leading bullet / "**Giải thích:**" label
+  text = text
+    .replace(/^(?:[-*]\s+)+/, '')
+    .replace(/^\*\*Giải thích\s*:?\*\*\s*:?\s*/i, '')
+    .replace(/\s+(?:[-*]\s*)$/, '')
+    .trim();
+
+  const blocks = [];
+  if (text) {
+    blocks.push(`<div class="fb-sec explain">
+      <div class="fb-sec-title">📘 Giải thích</div>
+      <div>${inline(text)}</div>
+    </div>`);
+  }
+  if (trans) {
+    blocks.push(`<div class="fb-sec trans">
+      <div class="fb-sec-title">🇻🇳 Dịch nghĩa</div>
+      <div><em>${inline(trans)}</em></div>
+    </div>`);
+  }
+  if (elim) {
+    blocks.push(`<div class="fb-sec elim">
+      <div class="fb-sec-title">🔎 Loại trừ đáp án nhiễu</div>
+      <div>${inline(elim)}</div>
+    </div>`);
+  }
+  if (trap) {
+    blocks.push(`<div class="fb-sec trap">
+      <div class="fb-sec-title">⚠️ Bẫy / Lưu ý</div>
+      <div>${inline(trap)}</div>
+    </div>`);
+  }
+
+  return `<div class="fb-sections">${blocks.join('')}</div>`;
+}
+
 function renderExFeedback(num, status) {
   const fb = document.getElementById(`fb-${num}`);
   const ans = window._exAnswers[num];
   if (!fb) return;
   if (!ans) {
-    fb.innerHTML = `<div class="ex-feedback-inner"><div class="fb-header"><span>ℹ️</span> Chưa có đáp án cho câu này.</div></div>`;
+    fb.innerHTML = `<div class="ex-feedback-inner"><div class="fb-header"><span class="fb-status-pill revealed">ℹ️ Chưa có đáp án cho câu này</span></div></div>`;
     fb.style.display = 'block';
     return;
   }
-  if (status === 'correct') {
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">✅ <strong>Chính xác!</strong> Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-  } else if (status === 'wrong') {
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">❌ Chưa đúng. Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-  } else if (status === 'revealed') {
-    fb.innerHTML = `<div class="ex-feedback-inner">
-      <div class="fb-header">💡 Đáp án: <strong>${escHtml(ans.display)}</strong></div>
-      <div class="fb-explain">${inline(ans.explanation)}</div>
-    </div>`;
-  }
+
+  const pillMap = {
+    correct: '<span class="fb-status-pill correct">✅ Chính xác!</span>',
+    wrong: '<span class="fb-status-pill wrong">❌ Chưa đúng</span>',
+    revealed: '<span class="fb-status-pill revealed">💡 Đáp án</span>'
+  };
+  const statusPill = pillMap[status] || pillMap.revealed;
+
+  // Show alternative accepted forms cleanly if any differ from display
+  const altForms = (ans.accept || []).filter(a => norm(a) !== norm(ans.display) && !ans.display.toLowerCase().includes(a.toLowerCase()));
+  const altHtml = altForms.length > 0
+    ? `<span class="fb-alt-chip">(hoặc: ${altForms.map(a => `<code>${escHtml(a)}</code>`).join(', ')})</span>`
+    : '';
+
+  fb.innerHTML = `<div class="ex-feedback-inner">
+    <div class="fb-header">
+      ${statusPill}
+      <span class="fb-ans-label">Đáp án:</span>
+      <span class="fb-ans-chip">${escHtml(ans.display)}</span>
+      ${altHtml}
+    </div>
+    ${formatExplanationHtml(ans.explanation)}
+  </div>`;
   fb.style.display = 'block';
 }
 
