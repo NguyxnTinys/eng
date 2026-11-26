@@ -22,7 +22,7 @@
     // Sub-mode states
     fc: { deck: [], idx: 0, flipped: false, scope: 'all', done: 0 },
     quiz: { deck: [], idx: 0, dir: 'en-vi', options: [], answered: false, chosen: -1, score: 0, total: 0 },
-    typing: { deck: [], idx: 0, submode: 'meaning', answered: false, correct: false, hintLevel: 0, score: 0, total: 0 },
+    typing: { deck: [], idx: 0, submode: 'meaning', answered: false, correct: false, userInput: '', hintLevel: 0, score: 0, total: 0 },
     game: { round: 1, pairs: [], leftSel: null, rightSel: null, matched: new Set(), mistakes: 0, combo: 0, bestCombo: 0, startTime: 0, timerId: null, elapsed: 0, finished: false }
   };
 
@@ -675,12 +675,50 @@
     state.typing.idx = 0;
     state.typing.answered = false;
     state.typing.correct = false;
+    state.typing.userInput = '';
     state.typing.hintLevel = 0;
     state.typing.score = 0;
     state.typing.total = state.typing.deck.length;
     if (state.typing.submode === 'dictation' && state.typing.deck[0]) {
       setTimeout(() => speakText(state.typing.deck[0].word), 180);
     }
+  }
+
+  // Character-level LCS diff so user immediately sees wrong / extra / missing letters
+  function renderSpellingDiff(typedRaw, expectedRaw) {
+    const a = typedRaw.trim();
+    const b = expectedRaw.trim();
+    const al = a.toLowerCase();
+    const bl = b.toLowerCase();
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = m - 1; i >= 0; i--) {
+      for (let j = n - 1; j >= 0; j--) {
+        dp[i][j] = al[i] === bl[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+    let userHtml = '', expHtml = '';
+    let i = 0, j = 0;
+    while (i < m && j < n) {
+      if (al[i] === bl[j]) {
+        userHtml += `<span class="vs-ch-ok">${esc(a[i])}</span>`;
+        expHtml += `<span class="vs-ch-ok">${esc(b[j])}</span>`;
+        i++; j++;
+      } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+        userHtml += `<span class="vs-ch-err">${esc(a[i])}</span>`;
+        i++;
+      } else {
+        expHtml += `<span class="vs-ch-miss">${esc(b[j])}</span>`;
+        j++;
+      }
+    }
+    while (i < m) { userHtml += `<span class="vs-ch-err">${esc(a[i])}</span>`; i++; }
+    while (j < n) { expHtml += `<span class="vs-ch-miss">${esc(b[j])}</span>`; j++; }
+
+    return `<div class="vs-diff-box">
+      <div class="vs-diff-row"><span class="vs-diff-lbl">Bạn nhập:</span><span class="vs-diff-word">${userHtml}</span></div>
+      <div class="vs-diff-row"><span class="vs-diff-lbl">Đáp án:</span><span class="vs-diff-word">${expHtml}</span></div>
+    </div>`;
   }
 
   function makeHint(word, level) {
@@ -742,10 +780,12 @@
         </div>
 
         <div class="vs-type-row">
-          <input id="vs-type-input" type="text" class="ex-input" style="max-width:100%"
+          <input id="vs-type-input" type="text" class="ex-input ${t.answered ? (t.correct ? 'vs-inp-ok' : 'vs-inp-bad') : ''}" style="max-width:100%"
+                 value="${esc(t.userInput || '')}"
                  placeholder="Gõ từ tiếng Anh..."
                  autocomplete="off" spellcheck="false"
-                 ${t.answered ? 'disabled' : ''}
+                 ${t.answered ? 'readonly' : ''}
+                 oninput="VocabStudio.typingInput(this.value)"
                  onkeydown="if(event.key==='Enter'){event.preventDefault();${t.answered ? 'VocabStudio.typingNext()' : 'VocabStudio.typingCheck()'}}">
           ${!t.answered ? `
             <button class="ex-btn" onclick="VocabStudio.typingHint()">💡 Gợi ý</button>
@@ -757,11 +797,12 @@
 
         ${t.answered ? `
           <div class="vs-type-fb ${t.correct ? 'ok' : 'bad'}">
-            <div style="font-weight:700;margin-bottom:6px">
-              ${t.correct ? '✅ Chính xác!' : '❌ Chưa chính xác.'}
-              Đáp án: <strong>${esc(cur.word)}</strong> <span class="vs-ipa">${esc(cur.ipa)}</span>
+            <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span>${t.correct ? '✅ Chính xác!' : '❌ Chưa chính xác.'}</span>
+              <span>Đáp án: <strong>${esc(cur.word)}</strong> <span class="vs-ipa">${esc(cur.ipa)}</span></span>
               <button class="vs-icon-btn" onclick="VocabStudio.speak('${escJs(cur.word)}')">🔊</button>
             </div>
+            ${!t.correct ? renderSpellingDiff(t.userInput || '', cur.word) : ''}
             <div><strong>Nghĩa:</strong> ${esc(cur.meaningPlain)}</div>
             <div style="margin-top:4px;font-size:.86rem;color:var(--gray-600)"><strong>Ví dụ:</strong> ${typeof inline === 'function' ? inline(cur.example) : esc(cur.example)}</div>
           </div>
@@ -883,6 +924,11 @@
         e.preventDefault();
         window.VocabStudio.quizNext();
       }
+    } else if (state.mode === 'typing' && state.typing.answered && state.typing.idx < state.typing.total) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        window.VocabStudio.typingNext();
+      }
     }
   });
 
@@ -996,15 +1042,20 @@
     // Typing / Dictation actions
     typingMode(sm) { initTyping(sm); render(); },
     typingRestart() { initTyping(state.typing.submode); render(); },
+    typingInput(val) { state.typing.userInput = val; },
     typingHint() {
+      const inp = document.getElementById('vs-type-input');
+      if (inp) state.typing.userInput = inp.value;
       state.typing.hintLevel++;
       render();
     },
     typingCheck() {
       const inp = document.getElementById('vs-type-input');
       if (!inp) return;
-      const val = inp.value.trim().toLowerCase().replace(/\s+/g, ' ');
+      const rawVal = inp.value;
+      const val = rawVal.trim().toLowerCase().replace(/\s+/g, ' ');
       if (!val) { inp.focus(); return; }
+      state.typing.userInput = rawVal.trim();
       const cur = state.typing.deck[state.typing.idx];
       const expected = cur.word.trim().toLowerCase().replace(/\s+/g, ' ');
       // Accept with or without "something/sth" normalization
@@ -1024,6 +1075,7 @@
       state.typing.idx++;
       state.typing.answered = false;
       state.typing.correct = false;
+      state.typing.userInput = '';
       state.typing.hintLevel = 0;
       render();
       if (state.typing.submode === 'dictation' && state.typing.deck[state.typing.idx]) {

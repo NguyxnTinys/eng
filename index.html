@@ -746,6 +746,23 @@
   }
   .vs-type-fb.ok { background: #f0fdf4; border: 1px solid #86efac; color: #065f46; }
   .vs-type-fb.bad { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+  .vs-inp-ok { border-color: var(--green) !important; background: #f0fdf4 !important; color: #065f46; font-weight: 700; }
+  .vs-inp-bad { border-color: var(--red) !important; background: #fff5f5 !important; color: #991b1b; font-weight: 700; }
+  .vs-diff-box {
+    background: white; border: 1px solid #fecaca; border-radius: 8px;
+    padding: 8px 12px; margin: 8px 0 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: .95rem;
+  }
+  .vs-diff-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .vs-diff-lbl {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: .76rem; font-weight: 700; color: var(--gray-500); min-width: 68px;
+  }
+  .vs-diff-word { letter-spacing: .04em; font-weight: 700; }
+  .vs-ch-ok { color: #166534; }
+  .vs-ch-err { color: #b91c1c; background: #fee2e2; border-radius: 3px; padding: 0 2px; text-decoration: underline wavy #dc2626; }
+  .vs-ch-miss { color: #065f46; background: #bbf7d0; border-radius: 3px; padding: 0 2px; }
 
   /* Match Game */
   .vs-game-stats { display: flex; gap: 14px; flex-wrap: wrap; font-size: .88rem; color: var(--gray-700); }
